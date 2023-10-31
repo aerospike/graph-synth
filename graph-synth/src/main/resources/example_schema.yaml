@@ -1,0 +1,160 @@
+rootVertexTypes:
+  - name: GoldenEntity
+    likelihood: 1.0
+    chancesToCreate: 1
+
+vertexTypes:
+  - name: GoldenEntity
+    outEdges:
+      - name: ObservedDigitalEntity
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: HasContactMedium
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: ResolvesToIndividual
+        likelihood: 1.0
+        chancesToCreate: 1
+    properties:
+      - name: number
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomString
+          args:
+            length: 10
+  - name: DigitalEntity
+    outEdges:
+      - name: ConnectedFromIp
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: AssociatedWithCookie
+        likelihood: 1.0
+        chancesToCreate: 1
+    properties:
+      - name: macAddress
+        type: Long
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomDigitSequence
+          args:
+            digits: 12
+      - name: make
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomString
+          args:
+            length: 10
+      - name: model
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomString
+          args:
+            length: 10
+  - name: ContactMedium
+    outEdges: [ ]
+    properties:
+      - name: type
+        type: Long
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomDigitSequence
+          args:
+            digits: 12
+  - name: Individual
+    outEdges:
+      - name: AssignedSSN
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: LivesAt
+        likelihood: 1.0
+        chancesToCreate: 1
+    properties:
+      - name: name
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomString
+          args:
+            length: 10
+  - name: Household
+    outEdges: []
+#      - name: HasMember
+#        likelihood: 1.0
+#        chancesToCreate: 1
+    properties:
+      - name: name
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomString
+          args:
+            length: 10
+  - name: IPAddress
+    outEdges: [ ]
+    properties:
+      - name: address
+        type: Long
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomDigitSequence
+          args:
+            digits: 12
+  - name: Cookie
+    outEdges: [ ]
+    properties:
+      - name: cookieId
+        type: Long
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomDigitSequence
+          args:
+            digits: 12
+
+edgeTypes:
+  - name: ObservedDigitalEntity
+    inVertex: DigitalEntity
+    outVertex: GoldenEntity
+    properties:
+      - name: observedDate
+        type: Long
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomDigitSequence
+          args:
+            digits: 10
+  - name: HasContactMedium
+    inVertex: ContactMedium
+    outVertex: GoldenEntity
+    properties: []
+
+  - name: ResolvesToIndividual
+    inVertex: Individual
+    outVertex: GoldenEntity
+    properties: []
+  - name: ConnectedFromIp
+    inVertex: IPAddress
+    outVertex: DigitalEntity
+    properties: []
+  - name: AssociatedWithCookie
+    inVertex: Cookie
+    outVertex: DigitalEntity
+    properties: []
+  - name: AssignedSSN
+    inVertex: IPAddress
+    outVertex: Individual
+    properties:
+      - name: ssn
+        type: Long
+        likelihood: 1.0
+        valueGenerator:
+          impl: RandomDigitSequence
+          args:
+            digits: 12
+
+  - name: LivesAt
+    inVertex: Household
+    outVertex: Individual
+    properties: []
