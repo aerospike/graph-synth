@@ -7,6 +7,8 @@
 package com.aerospike.synth.emitter.generator;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
+import com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder;
+import com.aerospike.graph.synth.util.tinkerpop.InMemorySchemaGraphProvider;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
@@ -18,6 +20,7 @@ import com.aerospike.movement.runtime.core.driver.impl.GeneratedOutputIdDriver;
 import com.aerospike.movement.runtime.core.driver.impl.SuppliedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.runtime.core.local.RunningPhase;
+import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProvider;;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
@@ -26,6 +29,9 @@ import com.aerospike.movement.util.core.runtime.IOUtil;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
 import java.io.File;
@@ -38,6 +44,63 @@ import static com.aerospike.movement.config.core.ConfigurationBase.Keys.*;
 import static junit.framework.TestCase.assertEquals;
 
 public class SchemaGraphIntegration {
+
+
+    @Test
+    public void generateFromGremlinStatementsSimple() {
+        Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
+        GraphTraversalSource sg = schemaGraph.traversal();
+        sg
+                .addV("vertexType").as("A")
+                .property(T.id,"A")
+                .property("entrypoint", true)
+                .property(ConfigUtil.subKey("entrypoint", SchemaBuilder.Keys.CHANCES_TO_CREATE), 1)
+                .property(ConfigUtil.subKey("entrypoint", SchemaBuilder.Keys.LIKELIHOOD), 1.0)
+                .addV("vertexType").as("B")
+                .property(T.id,"B")
+                .addE("edgeType").from("A").to("B")
+                .property(T.id,"AtoB")
+                .iterate();
+
+        final Long scaleFactor = 1L;
+
+        final Configuration testConfig = new MapConfiguration(
+                new HashMap<>() {{
+                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaParser.class.getName());
+                    put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName());
+                    put(LocalParallelStreamRuntime.Config.Keys.BATCH_SIZE, 1);
+                    put(EMITTER, Generator.class.getName());
+                    put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
+                    put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
+                    put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
+
+                    put(WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
+                    put(OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
+                    put(SuppliedWorkChunkDriver.Config.Keys.ITERATOR_SUPPLIER_PHASE_ONE, ConfiguredRangeSupplier.class.getName());
+                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_BOTTOM, 0L);
+                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_TOP, scaleFactor);
+                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
+                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
+                }});
+        System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
+
+        final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
+        g.V().drop().iterate();
+
+
+        final Runtime runtime = LocalParallelStreamRuntime.open(testConfig);
+        final Iterator<RunningPhase> x = runtime.runPhases(List.of(Runtime.PHASE.ONE), testConfig);
+        while (x.hasNext()) {
+            final RunningPhase y = x.next();
+            IteratorUtils.iterate(y);
+            y.get();
+            y.close();
+        }
+        runtime.close();
+        assertEquals(2L, g.V().count().next().longValue());
+        assertEquals(1L, g.E().count().next().longValue());
+
+    }
 
     @Test
     public void generateFromGraphSON() {

@@ -73,10 +73,10 @@ public class TestGenerator extends AbstractMovementTest {
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath());
         }};
         final Configuration mockConfig = getMockConfiguration(configMap);
-        final Configuration defaultConfig = ConfigUtil.configurationWithOverrides(mockConfig, emitterConfig);
+        final Configuration defaultConfig = ConfigUtil.withOverrides(mockConfig, emitterConfig);
 
 
-        final Configuration config = ConfigUtil.configurationWithOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
+        final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
             put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());
@@ -112,9 +112,9 @@ public class TestGenerator extends AbstractMovementTest {
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath());
         }};
         final Configuration mockConfig = getMockConfiguration(configMap);
-        final Configuration defaultConfig = ConfigUtil.configurationWithOverrides(mockConfig, emitterConfig);
+        final Configuration defaultConfig = ConfigUtil.withOverrides(mockConfig, emitterConfig);
 
-        final Configuration config = ConfigUtil.configurationWithOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
+        final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
             put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());
@@ -166,9 +166,9 @@ public class TestGenerator extends AbstractMovementTest {
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath());
         }};
         final Configuration mockConfig = getMockConfiguration(configMap);
-        final Configuration defaultConfig = ConfigUtil.configurationWithOverrides(mockConfig, emitterConfig);
+        final Configuration defaultConfig = ConfigUtil.withOverrides(mockConfig, emitterConfig);
 
-        final Configuration config = ConfigUtil.configurationWithOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
+        final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
             put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());
@@ -265,9 +265,9 @@ public class TestGenerator extends AbstractMovementTest {
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath());
         }};
         final Configuration mockConfig = getMockConfiguration(configMap);
-        final Configuration defaultConfig = ConfigUtil.configurationWithOverrides(mockConfig, emitterConfig);
+        final Configuration defaultConfig = ConfigUtil.withOverrides(mockConfig, emitterConfig);
 
-        final Configuration config = ConfigUtil.configurationWithOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
+        final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
             put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, MockOutputIdDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());

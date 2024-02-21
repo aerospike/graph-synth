@@ -118,10 +118,13 @@ public class Generator extends Loadable implements Emitter {
 
     @Override
     public Stream<Emitable> stream(final WorkChunkDriver workChunkDriver, final Runtime.PHASE phase) {
+
         if (phase == Runtime.PHASE.ONE) {
             final Stream<Long> rootIds = Stream.iterate(workChunkDriver.getNext(), Optional::isPresent, i -> workChunkDriver.getNext())
-                    .flatMap(wc -> IteratorUtils.stream(wc.get().stream().iterator()))
-                    .map(id -> (Long) id.get().getId());
+                    .flatMap(wc -> wc.get().stream())
+                    .map(id -> {
+                        return (Long) id.get().unwrap();
+                    });
             return rootIds.map(archipelagoId ->
                     new GeneratedArchipelago(archipelagoId, graphSchema, outputIdDriver, config));
         } else if (phase == Runtime.PHASE.TWO) {

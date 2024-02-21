@@ -32,7 +32,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
     @Test
     public void testYamlYamlEquality() {
         final File schemaFile = IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml");
-        SharedEmptyTinkerGraphGraphProvider.getInstance().traversal().V().drop().iterate();
+        SharedEmptyTinkerGraphGraphProvider.getGraphInstance().traversal().V().drop().iterate();
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
             put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
@@ -42,7 +42,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
         GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
 
         //write that loaded schema into a graph instance
-        SchemaGraphUtil.writeToGraph(SharedEmptyTinkerGraphGraphProvider.getInstance(), fromYaml);
+        SchemaGraphUtil.writeToGraph(SharedEmptyTinkerGraphGraphProvider.getGraphInstance(), fromYaml);
 
         //parse the graph instance back into a GraphSchema
         GraphSchema fromYaml2 = YAMLSchemaParser.open(config).parse();
@@ -54,7 +54,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
     @Test
     public void testGraphYamlEquality() {
         final File schemaFile = IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml");
-        SharedEmptyTinkerGraphGraphProvider.getInstance().traversal().V().drop().iterate();
+        SharedEmptyTinkerGraphGraphProvider.getGraphInstance().traversal().V().drop().iterate();
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
             put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
@@ -64,7 +64,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
         GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
 
         //write that loaded schema into a graph instance
-        SchemaGraphUtil.writeToGraph(SharedEmptyTinkerGraphGraphProvider.getInstance(), fromYaml);
+        SchemaGraphUtil.writeToGraph(SharedEmptyTinkerGraphGraphProvider.getGraphInstance(), fromYaml);
 
         //parse the graph instance back into a GraphSchema
         GraphSchema fromGraph = TinkerPopSchemaParser.open(config).parse();
@@ -76,7 +76,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
     @Test
     public void testGraphSONSeralization() {
         final File schemaFile = IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml");
-        SharedEmptyTinkerGraphGraphProvider.getInstance().traversal().V().drop().iterate();
+        SharedEmptyTinkerGraphGraphProvider.getGraphInstance().traversal().V().drop().iterate();
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
             put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
@@ -86,8 +86,8 @@ public class SchemaGraphTest extends AbstractMovementTest {
         GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
 
         //write that loaded schema into a graph instance
-        SchemaGraphUtil.writeToGraph(SharedEmptyTinkerGraphGraphProvider.getInstance(), fromYaml);
-        final Graph graph = SharedEmptyTinkerGraphGraphProvider.getInstance();
+        SchemaGraphUtil.writeToGraph(SharedEmptyTinkerGraphGraphProvider.getGraphInstance(), fromYaml);
+        final Graph graph = SharedEmptyTinkerGraphGraphProvider.getGraphInstance();
         graph.traversal().io("target/example_schema.json").write().iterate();
         graph.traversal().V().drop().iterate();
         graph.traversal().io("target/example_schema.json").read().iterate();
@@ -102,6 +102,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
         //compare the two GraphSchema instances, deep equality is implemented by each schema def class
         assertTrue(fromGraph.equals(fromYaml));
     }
+
 
 
 }

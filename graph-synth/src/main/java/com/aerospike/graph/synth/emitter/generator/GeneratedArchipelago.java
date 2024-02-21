@@ -55,7 +55,7 @@ public class GeneratedArchipelago implements Emitable {
                         SchemaUtil.getSchemaFromVertexLabel(this.graphSchema, label),
                         outputIdDriver,
                         Optional.empty());
-                final GeneratedVertex gv = new GeneratedVertex((Long) oi.getId(), vctx);
+                final GeneratedVertex gv = new GeneratedVertex((Long) oi.unwrap(), vctx);
                 return gv.emit(output);
             };
             return Map.of(label, generatorFn);

@@ -10,6 +10,7 @@ import com.aerospike.graph.synth.emitter.generator.schema.definition.*;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.GraphSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder;
+import com.aerospike.movement.tinkerpop.common.GraphProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
 import com.aerospike.graph.synth.util.tinkerpop.SchemaGraphUtil;
@@ -20,6 +21,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
 
 
 /**
@@ -70,8 +73,7 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
         if (config.containsKey(Config.Keys.GRAPHSON_FILE)) {
             graph = readGraphSON(Path.of(config.getString(Config.Keys.GRAPHSON_FILE)));
         } else if (config.containsKey(Config.Keys.GRAPH_PROVIDER)) {
-            //@todo fix graph provider returns Graph
-            graph = ((Graph) RuntimeUtil.openClassRef(config.getString(Config.Keys.GRAPH_PROVIDER), config));
+            graph = ((GraphProvider) RuntimeUtil.openClassRef(config.getString(Config.Keys.GRAPH_PROVIDER), config)).getProvided(GraphProvider.GraphProviderContext.INPUT);
         } else {
             throw new IllegalArgumentException("No GraphSON file or graph provider specified");
         }
@@ -131,10 +133,11 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
     }
 
     public static Optional<Object> getSubKeyFromElement(final Element tp3ele, final String key, final String subKey) {
-        if (!tp3ele.properties(ConfigUtil.subKey(key, subKey)).hasNext()) {
+        String sk = subKey(key, subKey);
+        if (!tp3ele.properties(sk).hasNext()) {
             return Optional.empty();
         }
-        return Optional.of(tp3ele.value(ConfigUtil.subKey(key, subKey)));
+        return Optional.of(tp3ele.value(subKey(key, subKey)));
     }
 
     private EdgeSchema fromTinkerPop(final Edge tp3SchemaEdge) {
@@ -192,10 +195,23 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
                 .collect(Collectors.toList());
     }
 
+    public static class MissingSchemaKeyException extends RuntimeException {
+        public static final String MISSING_MESSAGE = "missing schema key: ";
+
+        public MissingSchemaKeyException(String s) {
+            super(s);
+        }
+
+        public static MissingSchemaKeyException missingKey(final String missingKey) {
+            return new MissingSchemaKeyException(MISSING_MESSAGE + missingKey);
+        }
+
+    }
+
     public static RootVertexSpec TPvertexToRootVertexSpec(final Vertex entrypointVertex) {
         final RootVertexSpec rootVertexSpec = new RootVertexSpec();
-        rootVertexSpec.chancesToCreate = (Integer) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE).get();
-        rootVertexSpec.likelihood = (Double) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD).get();
+        rootVertexSpec.chancesToCreate = (Integer) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE).orElseThrow(() -> MissingSchemaKeyException.missingKey(subKey(SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE)));
+        rootVertexSpec.likelihood = (Double) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD).orElseThrow(() -> MissingSchemaKeyException.missingKey(subKey(SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD)));
         rootVertexSpec.name = (String) entrypointVertex.id();
         return rootVertexSpec;
     }

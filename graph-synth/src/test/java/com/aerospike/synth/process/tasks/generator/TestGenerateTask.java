@@ -43,11 +43,13 @@ public class TestGenerateTask extends AbstractMovementTest {
     public void testGenerateConformsToScaleFactor() {
         String schemaPath = IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath();
         final long scaleFactor = 100L;
+
         final Map<String, String> testConfig = new HashMap<>() {{
             put(Generate.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaPath);
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1));
         }};
+
         final Configuration mockedConfig = getMockConfiguration(testConfig);
         MockUtil.setDefaultMockCallbacks();
         final Task generateTask = (Task) Generate.open(mockedConfig);

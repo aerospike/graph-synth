@@ -128,7 +128,7 @@ public class EdgeGenerator {
             final Optional<OutputId> maybeNext = outputIdDriver.getNext();
             if (maybeNext.isEmpty())
                 return Stream.empty();
-            Long nextInVid = (Long) maybeNext.get().getId();
+            Long nextInVid = (Long) maybeNext.get().unwrap();
             final GeneratedEdge ge = new GeneratedEdge(edgeGenerator, nextInVid, outVid);
             final VertexContext context = new VertexContext(graphSchema,
                     vertexSchema,
@@ -170,9 +170,9 @@ public class EdgeGenerator {
         if (field.equals("~label"))
             return edge.label();
         if (field.equals("~to"))
-            return String.valueOf(edge.toId().getId());
+            return String.valueOf(edge.toId().unwrap());
         if (field.equals("~from"))
-            return String.valueOf(edge.fromId().getId());
+            return String.valueOf(edge.fromId().unwrap());
         else
             return ((GeneratedEdge) edge).edgeSchema.properties.stream()
                     .filter(p -> p.name.equals(field))
