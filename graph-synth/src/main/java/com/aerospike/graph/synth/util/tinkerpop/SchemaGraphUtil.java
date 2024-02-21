@@ -21,7 +21,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.aerospike.movement.util.core.configuration.ConfigurationUtil.subKey;
+import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
+
 
 public class SchemaGraphUtil {
     public static void writeToGraph(final Graph graph, final GraphSchema graphSchema) {

@@ -10,7 +10,7 @@ import com.aerospike.graph.synth.emitter.generator.schema.definition.*;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.GraphSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder;
-import com.aerospike.movement.util.core.configuration.ConfigurationUtil;
+import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
 import com.aerospike.graph.synth.util.tinkerpop.SchemaGraphUtil;
 import org.apache.commons.configuration2.Configuration;
@@ -46,7 +46,7 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
 
         @Override
         public List<String> getKeys() {
-            return ConfigurationUtil.getKeysFromClass(Config.Keys.class);
+            return ConfigUtil.getKeysFromClass(Config.Keys.class);
         }
 
         public static class Keys {
@@ -127,14 +127,14 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
     }
 
     private boolean isMetadata(final String key) {
-        return ConfigurationUtil.isSubKey(key) || key.equals(SchemaBuilder.Keys.ENTRYPOINT);
+        return ConfigUtil.isSubKey(key) || key.equals(SchemaBuilder.Keys.ENTRYPOINT);
     }
 
     public static Optional<Object> getSubKeyFromElement(final Element tp3ele, final String key, final String subKey) {
-        if (!tp3ele.properties(ConfigurationUtil.subKey(key, subKey)).hasNext()) {
+        if (!tp3ele.properties(ConfigUtil.subKey(key, subKey)).hasNext()) {
             return Optional.empty();
         }
-        return Optional.of(tp3ele.value(ConfigurationUtil.subKey(key, subKey)));
+        return Optional.of(tp3ele.value(ConfigUtil.subKey(key, subKey)));
     }
 
     private EdgeSchema fromTinkerPop(final Edge tp3SchemaEdge) {

@@ -19,7 +19,7 @@ import com.aerospike.movement.runtime.core.driver.impl.SuppliedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProvider;;
-import com.aerospike.movement.util.core.configuration.ConfigurationUtil;
+import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
 import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
 import com.aerospike.movement.util.core.runtime.IOUtil;
@@ -65,7 +65,7 @@ public class SchemaGraphIntegration {
                     put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
                     put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
-        System.out.println(ConfigurationUtil.configurationToPropertiesFormat(testConfig));
+        System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
         final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
         g.V().drop().iterate();
@@ -107,7 +107,7 @@ public class SchemaGraphIntegration {
                     put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, SCALE_FACTOR * 10);
                     put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
-        System.out.println(ConfigurationUtil.configurationToPropertiesFormat(testConfig));
+        System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
         final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
         g.V().drop().iterate();

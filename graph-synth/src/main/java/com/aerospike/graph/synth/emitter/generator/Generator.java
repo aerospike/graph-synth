@@ -20,7 +20,7 @@ import com.aerospike.movement.runtime.core.driver.OutputIdDriver;
 import com.aerospike.movement.runtime.core.driver.WorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.Loadable;
 import com.aerospike.movement.test.mock.output.MockOutput;
-import com.aerospike.movement.util.core.configuration.ConfigurationUtil;
+import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.error.ErrorUtil;
 import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
@@ -58,7 +58,7 @@ public class Generator extends Loadable implements Emitter {
 
         @Override
         public List<String> getKeys() {
-            return ConfigurationUtil.getKeysFromClass(Config.Keys.class);
+            return ConfigUtil.getKeysFromClass(Config.Keys.class);
         }
 
 
@@ -101,7 +101,7 @@ public class Generator extends Loadable implements Emitter {
 
     //Open, create or getInstance methods
     public static Generator open(final Configuration config) {
-        final GraphSchemaParser GraphSchemaParser = (GraphSchemaParser) RuntimeUtil.load(Config.Keys.SCHEMA_PARSER, ConfigurationUtil.configurationWithOverrides(new MapConfiguration(Config.DEFAULTS), config));
+        final GraphSchemaParser GraphSchemaParser = (GraphSchemaParser) RuntimeUtil.load(Config.Keys.SCHEMA_PARSER, ConfigUtil.withOverrides(new MapConfiguration(Config.DEFAULTS), config));
         final OutputIdDriver driver = (OutputIdDriver) RuntimeUtil.lookupOrLoad(OutputIdDriver.class, config);
         return new Generator(driver, GraphSchemaParser, config);
     }
@@ -120,8 +120,8 @@ public class Generator extends Loadable implements Emitter {
     public Stream<Emitable> stream(final WorkChunkDriver workChunkDriver, final Runtime.PHASE phase) {
         if (phase == Runtime.PHASE.ONE) {
             final Stream<Long> rootIds = Stream.iterate(workChunkDriver.getNext(), Optional::isPresent, i -> workChunkDriver.getNext())
-                    .flatMap(wc -> IteratorUtils.stream(wc.get().iterator()))
-                    .map(id -> (Long) id.getId());
+                    .flatMap(wc -> IteratorUtils.stream(wc.get().stream().iterator()))
+                    .map(id -> (Long) id.get().getId());
             return rootIds.map(archipelagoId ->
                     new GeneratedArchipelago(archipelagoId, graphSchema, outputIdDriver, config));
         } else if (phase == Runtime.PHASE.TWO) {

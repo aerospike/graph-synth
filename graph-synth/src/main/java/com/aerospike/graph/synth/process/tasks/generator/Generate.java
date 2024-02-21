@@ -13,7 +13,7 @@ import com.aerospike.movement.process.core.Task;
 import com.aerospike.movement.runtime.core.Runtime;
 import com.aerospike.movement.runtime.core.driver.impl.GeneratedOutputIdDriver;
 import com.aerospike.movement.runtime.core.driver.impl.SuppliedWorkChunkDriver;
-import com.aerospike.movement.util.core.configuration.ConfigurationUtil;
+import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.error.ErrorUtil;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
 import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
@@ -75,7 +75,7 @@ public class Generate extends Task {
 
         @Override
         public List<String> getKeys() {
-            return ConfigurationUtil.getKeysFromClass(Keys.class);
+            return ConfigUtil.getKeysFromClass(Keys.class);
         }
 
         public static class Keys {
@@ -112,7 +112,7 @@ public class Generate extends Task {
          */
         SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.ONE, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, scaleFactor).iterator())));
         SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.TWO, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, scaleFactor).iterator())));
-        return ConfigurationUtil.configurationWithOverrides(config, new HashMap<>() {{
+        return ConfigUtil.withOverrides(config, new HashMap<>() {{
             put(ConfigurationBase.Keys.EMITTER, Generator.class.getName());
             put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
             put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER,GeneratedOutputIdDriver.class.getName());

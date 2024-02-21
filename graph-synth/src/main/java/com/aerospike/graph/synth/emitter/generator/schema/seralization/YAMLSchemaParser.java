@@ -10,7 +10,7 @@ package com.aerospike.graph.synth.emitter.generator.schema.seralization;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.GraphSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
-import com.aerospike.movement.util.core.configuration.ConfigurationUtil;
+import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.IOUtil;
 import org.apache.commons.configuration2.Configuration;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -46,7 +46,7 @@ public class YAMLSchemaParser implements GraphSchemaParser {
 
         @Override
         public List<String> getKeys() {
-            return ConfigurationUtil.getKeysFromClass(Config.Keys.class);
+            return ConfigUtil.getKeysFromClass(Config.Keys.class);
         }
 
         public static class Keys {

@@ -101,7 +101,7 @@ public class EdgeGenerator {
             if (written.compareAndSet(false, true)) {
                     output
                             .writer(EmittedEdge.class, edgeSchema.label())
-                            .writeToOutput(this);
+                            .writeToOutput(Optional.of(this));
             }
             return Stream.empty();
         }
