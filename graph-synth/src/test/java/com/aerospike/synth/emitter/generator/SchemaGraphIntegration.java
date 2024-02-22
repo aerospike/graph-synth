@@ -26,6 +26,7 @@ import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
 import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
 import com.aerospike.movement.util.core.runtime.IOUtil;
+import com.aerospike.synth.emitter.generator.schema.TestSchema;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -54,18 +55,7 @@ public class SchemaGraphIntegration {
     }
 
     public static void addSimplestSchemaToGraph(final Graph schemaGraph) {
-        GraphTraversalSource sg = schemaGraph.traversal();
-        sg
-                .addV("vertexType").as("A")
-                .property(T.id, "A")
-                .property("entrypoint", true)
-                .property(ConfigUtil.subKey("entrypoint", SchemaBuilder.Keys.CHANCES_TO_CREATE), 1)
-                .property(ConfigUtil.subKey("entrypoint", SchemaBuilder.Keys.LIKELIHOOD), 1.0)
-                .addV("vertexType").as("B")
-                .property(T.id, "B")
-                .addE("edgeType").from("A").to("B")
-                .property(T.id, "AtoB")
-                .iterate();
+        TestSchema.SimplestTestSchema.INSTANCE.addToGraph(schemaGraph);
     }
 
     @Test

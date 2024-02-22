@@ -11,8 +11,8 @@ package com.aerospike.graph.synth.emitter.generator.schema.definition;
  */
 public class RootVertexSpec {
     public String name;
-    public Double likelihood;
-    public Integer chancesToCreate;
+    public Double likelihood = 1.0;
+    public Integer chancesToCreate = 1;
 
     public VertexSchema toVertexSchema(GraphSchema schema) {
         return schema.vertexTypes.stream()
@@ -21,7 +21,7 @@ public class RootVertexSpec {
     }
 
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
         if (!RootVertexSpec.class.isAssignableFrom(o.getClass()))
             return false;
         RootVertexSpec other = (RootVertexSpec) o;

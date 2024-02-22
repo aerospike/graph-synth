@@ -210,8 +210,8 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
 
     public static RootVertexSpec TPvertexToRootVertexSpec(final Vertex entrypointVertex) {
         final RootVertexSpec rootVertexSpec = new RootVertexSpec();
-        rootVertexSpec.chancesToCreate = (Integer) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE).orElseThrow(() -> MissingSchemaKeyException.missingKey(subKey(SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE)));
-        rootVertexSpec.likelihood = (Double) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD).orElseThrow(() -> MissingSchemaKeyException.missingKey(subKey(SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD)));
+        rootVertexSpec.chancesToCreate = (Integer) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE).orElse(1);
+        rootVertexSpec.likelihood = (Double) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD).orElse(1.0);
         rootVertexSpec.name = (String) entrypointVertex.id();
         return rootVertexSpec;
     }
