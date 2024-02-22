@@ -13,12 +13,14 @@ import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.IOUtil;
 import org.apache.commons.configuration2.Configuration;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -26,6 +28,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Grant Haywood (<a href="http://iowntheinter.net">http://iowntheinter.net</a>)
@@ -101,5 +104,19 @@ public class YAMLSchemaParser implements GraphSchemaParser {
         } catch (IOException e) {
             throw new RuntimeException("Could not read file: " + file.toPath(), e);
         }
+    }
+
+    public static String dump(final GraphSchema schema) {
+        DumperOptions options = new DumperOptions();
+        options.setIndent(4);
+        options.setPrettyFlow(true);
+        // Fix below - additional configuration
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        final Yaml yaml = new Yaml(options);
+        final StringWriter writer = new StringWriter();
+        yaml.dump(schema, writer);
+        String s = writer.toString().lines().filter(line -> !line.startsWith("!!")).collect(Collectors.joining("\n"));
+        return s;
     }
 }

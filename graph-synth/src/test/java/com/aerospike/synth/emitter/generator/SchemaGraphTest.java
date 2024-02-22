@@ -19,6 +19,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
@@ -46,6 +49,30 @@ public class SchemaGraphTest extends AbstractMovementTest {
 
         //parse the graph instance back into a GraphSchema
         GraphSchema fromYaml2 = YAMLSchemaParser.open(config).parse();
+
+        //compare the two GraphSchema instances, deep equality is implemented by each schema def class
+        assertTrue(fromYaml2.equals(fromYaml));
+    }
+
+    @Test
+    public void testYamlSeralization() throws IOException {
+        final File schemaFile = IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml");
+        SharedEmptyTinkerGraphGraphProvider.getGraphInstance().traversal().V().drop().iterate();
+        final Configuration config = new MapConfiguration(new HashMap<>() {{
+            put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
+            put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
+        }});
+
+        //parse the yaml file to a GraphSchema
+        GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
+
+        final String yamlString = YAMLSchemaParser.dump(fromYaml);
+
+        Path tempFile = Files.createTempFile("yaml", "test");
+        Files.write(tempFile,yamlString.getBytes());
+        GraphSchema fromYaml2 = YAMLSchemaParser.from(tempFile).parse();
+
+
 
         //compare the two GraphSchema instances, deep equality is implemented by each schema def class
         assertTrue(fromYaml2.equals(fromYaml));

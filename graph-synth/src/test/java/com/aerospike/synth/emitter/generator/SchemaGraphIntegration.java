@@ -32,6 +32,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -45,10 +47,13 @@ import static junit.framework.TestCase.assertEquals;
 
 public class SchemaGraphIntegration {
 
+    @Before
+    @After
+    public void clearSchemaGraph(){
+        InMemorySchemaGraphProvider.getGraphInstance().traversal().V().drop().iterate();
+    }
 
-    @Test
-    public void generateFromGremlinStatementsSimple() {
-        Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
+    public static void addSimplestSchemaToGraph(final Graph schemaGraph){
         GraphTraversalSource sg = schemaGraph.traversal();
         sg
                 .addV("vertexType").as("A")
@@ -61,6 +66,11 @@ public class SchemaGraphIntegration {
                 .addE("edgeType").from("A").to("B")
                 .property(T.id,"AtoB")
                 .iterate();
+    }
+    @Test
+    public void generateFromGremlinStatementsSimple() {
+        Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
+        addSimplestSchemaToGraph(schemaGraph);
 
         final Long scaleFactor = 1L;
 
