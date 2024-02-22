@@ -70,6 +70,7 @@ public class TestGenerator extends AbstractMovementTest {
         final Map<String, String> configMap = new HashMap<>() {{
             put(THREADS, String.valueOf(THREAD_COUNT));
             put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(TEST_SIZE));
+            put(Generator.Config.Keys.SCHEMA_PARSER,YAMLSchemaParser.class.getName());
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath());
         }};
         final Configuration mockConfig = getMockConfiguration(configMap);
@@ -163,6 +164,7 @@ public class TestGenerator extends AbstractMovementTest {
         final Map<String, String> configMap = new HashMap<>() {{
             put(THREADS, String.valueOf(THREAD_COUNT));
             put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(TEST_SIZE));
+            put(Generator.Config.Keys.SCHEMA_PARSER,YAMLSchemaParser.class.getName());
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath());
         }};
         final Configuration mockConfig = getMockConfiguration(configMap);
@@ -261,6 +263,7 @@ public class TestGenerator extends AbstractMovementTest {
 
         final Map<String, String> configMap = new HashMap<>() {{
             put(THREADS, String.valueOf(THREAD_COUNT));
+            put(Generator.Config.Keys.SCHEMA_PARSER,YAMLSchemaParser.class.getName());
             put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(TEST_SIZE));
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").getAbsolutePath());
         }};

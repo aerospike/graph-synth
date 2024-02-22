@@ -49,24 +49,25 @@ public class SchemaGraphIntegration {
 
     @Before
     @After
-    public void clearSchemaGraph(){
+    public void clearSchemaGraph() {
         InMemorySchemaGraphProvider.getGraphInstance().traversal().V().drop().iterate();
     }
 
-    public static void addSimplestSchemaToGraph(final Graph schemaGraph){
+    public static void addSimplestSchemaToGraph(final Graph schemaGraph) {
         GraphTraversalSource sg = schemaGraph.traversal();
         sg
                 .addV("vertexType").as("A")
-                .property(T.id,"A")
+                .property(T.id, "A")
                 .property("entrypoint", true)
                 .property(ConfigUtil.subKey("entrypoint", SchemaBuilder.Keys.CHANCES_TO_CREATE), 1)
                 .property(ConfigUtil.subKey("entrypoint", SchemaBuilder.Keys.LIKELIHOOD), 1.0)
                 .addV("vertexType").as("B")
-                .property(T.id,"B")
+                .property(T.id, "B")
                 .addE("edgeType").from("A").to("B")
-                .property(T.id,"AtoB")
+                .property(T.id, "AtoB")
                 .iterate();
     }
+
     @Test
     public void generateFromGremlinStatementsSimple() {
         Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
@@ -165,6 +166,7 @@ public class SchemaGraphIntegration {
         final Configuration testConfig = new MapConfiguration(
                 new HashMap<>() {{
                     put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
+                    put(Generator.Config.Keys.SCHEMA_PARSER, YAMLSchemaParser.class.getName());
                     put(LocalParallelStreamRuntime.Config.Keys.BATCH_SIZE, 1);
                     put(EMITTER, Generator.class.getName());
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());

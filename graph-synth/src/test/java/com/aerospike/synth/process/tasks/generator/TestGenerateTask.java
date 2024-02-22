@@ -6,6 +6,7 @@
 
 package com.aerospike.synth.process.tasks.generator;
 
+import com.aerospike.graph.synth.emitter.generator.Generator;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.movement.process.core.Task;
@@ -47,6 +48,7 @@ public class TestGenerateTask extends AbstractMovementTest {
         final Map<String, String> testConfig = new HashMap<>() {{
             put(Generate.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaPath);
+            put(Generator.Config.Keys.SCHEMA_PARSER,YAMLSchemaParser.class.getName());
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1));
         }};
 

@@ -1,6 +1,8 @@
 package com.aerospike.synth.emitter.generator.schema;
 
 import com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -9,6 +11,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public abstract class TestSchema {
@@ -21,7 +25,14 @@ public abstract class TestSchema {
     public void writeToGraphSon(Path graphsonPath) {
         addToGraph(TinkerGraph.open()).traversal().io(graphsonPath.toAbsolutePath().toString()).write().iterate();
     }
-    abstract void writeToYAML(final Path yamlPath);
+
+    public void writeToYAML(Path yamlPath) {
+        try {
+            Files.write(yamlPath, YAMLSchemaParser.dump(TinkerPopSchemaParser.fromGraph(addToGraph(TinkerGraph.open()))).getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     abstract GraphTraversal<?, ?> traversal(GraphTraversalSource g);
 
@@ -36,13 +47,6 @@ public abstract class TestSchema {
     }
 
     class SimplestTestSchema extends TestSchema {
-
-
-        @Override
-        public void writeToYAML(Path yamlPath) {
-
-        }
-
         @Override
         public GraphTraversal<?, ?> traversal(GraphTraversalSource g) {
             return g
