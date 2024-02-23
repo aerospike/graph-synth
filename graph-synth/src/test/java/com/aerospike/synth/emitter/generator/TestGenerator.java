@@ -13,14 +13,14 @@ import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.movement.logging.core.Logger;
 import com.aerospike.movement.runtime.core.Runtime;
-import com.aerospike.movement.runtime.core.driver.impl.GeneratedOutputIdDriver;
+import com.aerospike.movement.runtime.core.driver.impl.RangedOutputIdDriver;
 import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.graph.synth.test.generator.SchemaTestConstants;
 import com.aerospike.movement.test.mock.MockCallback;
 import com.aerospike.movement.test.mock.driver.MockOutputIdDriver;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
 import com.aerospike.movement.util.core.iterator.OneShotIteratorSupplier;
-import com.aerospike.movement.runtime.core.driver.impl.SuppliedWorkChunkDriver;
+import com.aerospike.movement.runtime.core.driver.impl.RangedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.test.core.AbstractMovementTest;
 import com.aerospike.movement.test.mock.MockUtil;
@@ -78,11 +78,12 @@ public class TestGenerator extends AbstractMovementTest {
 
 
         final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
-            put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(DUPLICATE_TEST_SIZE + 1));
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
+            put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, RangedWorkChunkDriver.class.getName());
+            put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP,DUPLICATE_TEST_SIZE);
+            put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(DUPLICATE_TEST_SIZE + 1));
+            put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
         }}));
         registerCleanupCallback(() -> {
             LocalParallelStreamRuntime.getInstance(config).close();
@@ -90,9 +91,6 @@ public class TestGenerator extends AbstractMovementTest {
 
         final Set<Object> emittedIds = Collections.synchronizedSet(new HashSet<>());
         final Runtime runtime = LocalParallelStreamRuntime.getInstance(config);
-
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.ONE, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, DUPLICATE_TEST_SIZE).iterator())));
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.TWO, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, DUPLICATE_TEST_SIZE).iterator())));
 
 
         MockUtil.setDefaultMockCallbacks();
@@ -116,12 +114,12 @@ public class TestGenerator extends AbstractMovementTest {
         final Configuration defaultConfig = ConfigUtil.withOverrides(mockConfig, emitterConfig);
 
         final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
-            put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());
+            put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, RangedWorkChunkDriver.class.getName());
 
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(TEST_SIZE + 1));
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
+            put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(TEST_SIZE + 1));
+            put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, 8);
         }}));
         registerCleanupCallback(() -> {
@@ -131,10 +129,6 @@ public class TestGenerator extends AbstractMovementTest {
         System.out.println(ConfigUtil.configurationToPropertiesFormat(config));
 
         final Set<Object> emittedIds = Collections.synchronizedSet(new HashSet<>());
-
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.ONE, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, TEST_SIZE).iterator())));
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.TWO, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, TEST_SIZE).iterator())));
-
 
         MockUtil.setDefaultMockCallbacks();
         final AtomicBoolean duplicateIdDetected = new AtomicBoolean(false);
@@ -171,12 +165,13 @@ public class TestGenerator extends AbstractMovementTest {
         final Configuration defaultConfig = ConfigUtil.withOverrides(mockConfig, emitterConfig);
 
         final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
-            put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());
+            put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, RangedWorkChunkDriver.class.getName());
+            put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP,TEST_SIZE);
 
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(TEST_SIZE + 1));
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
+            put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(TEST_SIZE + 1));
+            put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, 8);
         }}));
         registerCleanupCallback(() -> {
@@ -187,9 +182,6 @@ public class TestGenerator extends AbstractMovementTest {
 
         final Set<Object> emittedIds = Collections.synchronizedSet(new HashSet<>());
         final Runtime runtime = LocalParallelStreamRuntime.getInstance(config);
-
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.ONE, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, TEST_SIZE).iterator())));
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.TWO, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, TEST_SIZE).iterator())));
 
         MockUtil.setDefaultMockCallbacks();
         final AtomicBoolean duplicateIdDetected = new AtomicBoolean(false);
@@ -272,17 +264,16 @@ public class TestGenerator extends AbstractMovementTest {
 
         final Configuration config = ConfigUtil.withOverrides(defaultConfig, new MapConfiguration(new HashMap<>() {{
             put(ConfigurationBase.Keys.OUTPUT_ID_DRIVER, MockOutputIdDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
-            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, SuppliedWorkChunkDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+            put(ConfigurationBase.Keys.WORK_CHUNK_DRIVER_PHASE_TWO, RangedWorkChunkDriver.class.getName());
+            put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP,TEST_SIZE);
 
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(TEST_SIZE + 1));
-            put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
+            put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(TEST_SIZE + 1));
+            put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, String.valueOf(Long.MAX_VALUE));
         }}));
         registerCleanupCallback(() -> {
             LocalParallelStreamRuntime.getInstance(config).close();
         });
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.ONE, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.of(1L, 2L, 1L).iterator())));
-        SuppliedWorkChunkDriver.setIteratorSupplierForPhase(Runtime.PHASE.TWO, OneShotIteratorSupplier.of(() -> PrimitiveIteratorWrap.wrap(LongStream.range(0, TEST_SIZE).iterator())));
 
         final Set<Object> emittedIds = Collections.synchronizedSet(new HashSet<>());
         final Runtime runtime = LocalParallelStreamRuntime.getInstance(config);

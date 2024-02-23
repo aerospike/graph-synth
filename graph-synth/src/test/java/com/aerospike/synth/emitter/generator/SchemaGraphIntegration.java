@@ -16,8 +16,8 @@ import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema
 import com.aerospike.movement.encoding.tinkerpop.TinkerPopTraversalEncoder;
 import com.aerospike.movement.output.tinkerpop.TinkerPopTraversalOutput;
 import com.aerospike.movement.runtime.core.Runtime;
-import com.aerospike.movement.runtime.core.driver.impl.GeneratedOutputIdDriver;
-import com.aerospike.movement.runtime.core.driver.impl.SuppliedWorkChunkDriver;
+import com.aerospike.movement.runtime.core.driver.impl.RangedOutputIdDriver;
+import com.aerospike.movement.runtime.core.driver.impl.RangedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
@@ -75,13 +75,12 @@ public class SchemaGraphIntegration {
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
 
-                    put(WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
-                    put(OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
-                    put(SuppliedWorkChunkDriver.Config.Keys.ITERATOR_SUPPLIER_PHASE_ONE, ConfiguredRangeSupplier.class.getName());
-                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_BOTTOM, 0L);
-                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_TOP, scaleFactor);
-                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
-                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
+                    put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+                    put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP, scaleFactor);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
@@ -121,13 +120,12 @@ public class SchemaGraphIntegration {
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
 
-                    put(WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
-                    put(OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
-                    put(SuppliedWorkChunkDriver.Config.Keys.ITERATOR_SUPPLIER_PHASE_ONE, ConfiguredRangeSupplier.class.getName());
-                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_BOTTOM, 0L);
-                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_TOP, scaleFactor);
-                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
-                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
+                    put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+                    put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP, scaleFactor);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
@@ -163,14 +161,13 @@ public class SchemaGraphIntegration {
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
 
-                    put(WORK_CHUNK_DRIVER_PHASE_ONE, SuppliedWorkChunkDriver.class.getName());
-                    put(OUTPUT_ID_DRIVER, GeneratedOutputIdDriver.class.getName());
-                    put(SuppliedWorkChunkDriver.Config.Keys.ITERATOR_SUPPLIER_PHASE_ONE, ConfiguredRangeSupplier.class.getName());
+                    put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+                    put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
 
-                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_BOTTOM, 0L);
-                    put(ConfiguredRangeSupplier.Config.Keys.RANGE_TOP, SCALE_FACTOR);
-                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_BOTTOM, SCALE_FACTOR * 10);
-                    put(GeneratedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP, SCALE_FACTOR);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, SCALE_FACTOR * 10);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
