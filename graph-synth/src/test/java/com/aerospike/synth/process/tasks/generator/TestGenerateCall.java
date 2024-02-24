@@ -55,6 +55,7 @@ public class TestGenerateCall {
 
         final Map<String, String> configMap =
                 Generate.Config.INSTANCE.defaultConfigMap(new HashMap<>() {{
+                    put(SCALE_FACTOR,TEST_SCALE_FACTOR);
                     put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1)); //TinkerGraph is not thread safe
                 }});
 

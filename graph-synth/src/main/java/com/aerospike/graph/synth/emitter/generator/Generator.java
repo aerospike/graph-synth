@@ -70,7 +70,6 @@ public class Generator extends Loadable implements Emitter {
 
         private static final Map<String, String> DEFAULTS = new HashMap<>() {{
             put(Generate.Config.Keys.EMITTER, Generator.class.getName());
-            put(Keys.SCALE_FACTOR, "100");
         }};
     }
 

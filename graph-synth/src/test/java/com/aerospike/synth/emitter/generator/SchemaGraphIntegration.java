@@ -8,6 +8,7 @@ package com.aerospike.synth.emitter.generator;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
 import com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder;
+import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.graph.synth.util.tinkerpop.InMemorySchemaGraphProvider;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
@@ -44,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.aerospike.movement.config.core.ConfigurationBase.Keys.*;
+import static com.aerospike.movement.test.core.AbstractMovementTest.testTask;
 import static junit.framework.TestCase.assertEquals;
 
 public class SchemaGraphIntegration {
@@ -74,7 +76,7 @@ public class SchemaGraphIntegration {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
-
+                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
                     put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
@@ -88,15 +90,8 @@ public class SchemaGraphIntegration {
         g.V().drop().iterate();
 
 
-        final Runtime runtime = LocalParallelStreamRuntime.open(testConfig);
-        final Iterator<RunningPhase> x = runtime.runPhases(List.of(Runtime.PHASE.ONE), testConfig);
-        while (x.hasNext()) {
-            final RunningPhase y = x.next();
-            IteratorUtils.iterate(y);
-            y.get();
-            y.close();
-        }
-        runtime.close();
+        testTask(Generate.class,testConfig);
+
         assertEquals(2L, g.V().count().next().longValue());
         assertEquals(1L, g.E().count().next().longValue());
 
@@ -119,7 +114,7 @@ public class SchemaGraphIntegration {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
-
+                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
                     put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
@@ -133,22 +128,14 @@ public class SchemaGraphIntegration {
         g.V().drop().iterate();
 
 
-        final Runtime runtime = LocalParallelStreamRuntime.open(testConfig);
-        final Iterator<RunningPhase> x = runtime.runPhases(List.of(Runtime.PHASE.ONE), testConfig);
-        while (x.hasNext()) {
-            final RunningPhase y = x.next();
-            IteratorUtils.iterate(y);
-            y.get();
-            y.close();
-        }
-        runtime.close();
+        testTask(Generate.class,testConfig);
         assertEquals(2L, g.V().count().next().longValue());
         assertEquals(1L, g.E().count().next().longValue());
     }
 
     @Test
     public void simplestSchema() {
-        final Long SCALE_FACTOR = 1L;
+        final Long scaleFactor = 1L;
         final File schemaFile = IOUtil.copyFromResourcesIntoNewTempFile("simplest_schema.yaml");
 
         final Configuration testConfig = new MapConfiguration(
@@ -160,13 +147,14 @@ public class SchemaGraphIntegration {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
+                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
 
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
 
                     put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
-                    put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP, SCALE_FACTOR);
-                    put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, SCALE_FACTOR * 10);
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP, scaleFactor);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
                     put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
@@ -175,15 +163,8 @@ public class SchemaGraphIntegration {
         g.V().drop().iterate();
 
 
-        final Runtime runtime = LocalParallelStreamRuntime.open(testConfig);
-        final Iterator<RunningPhase> x = runtime.runPhases(List.of(Runtime.PHASE.ONE), testConfig);
-        while (x.hasNext()) {
-            final RunningPhase y = x.next();
-            IteratorUtils.iterate(y);
-            y.get();
-            y.close();
-        }
-        runtime.close();
+        testTask(Generate.class,testConfig);
+
         assertEquals(2L, g.V().count().next().longValue());
         assertEquals(1L, g.E().count().next().longValue());
         GraphSchema schema = YAMLSchemaParser.from(schemaFile.toPath()).parse();

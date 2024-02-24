@@ -2,6 +2,7 @@ package com.aerospike.synth.emitter.generator.schema;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.graph.synth.util.tinkerpop.InMemorySchemaGraphProvider;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.movement.encoding.tinkerpop.TinkerPopTraversalEncoder;
@@ -29,6 +30,7 @@ import org.junit.runners.Parameterized;
 import java.util.*;
 
 import static com.aerospike.movement.config.core.ConfigurationBase.Keys.*;
+import static com.aerospike.movement.test.core.AbstractMovementTest.testTask;
 import static junit.framework.TestCase.assertEquals;
 
 
@@ -69,7 +71,7 @@ public class TestSchemas {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
-
+                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
                     put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
@@ -78,20 +80,10 @@ public class TestSchemas {
                     put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
-
         final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
         g.V().drop().iterate();
 
-
-        final Runtime runtime = LocalParallelStreamRuntime.open(testConfig);
-        final Iterator<RunningPhase> x = runtime.runPhases(List.of(Runtime.PHASE.ONE), testConfig);
-        while (x.hasNext()) {
-            final RunningPhase y = x.next();
-            IteratorUtils.iterate(y);
-            y.get();
-            y.close();
-        }
-        runtime.close();
+        testTask(Generate.class,testConfig);
         assertEquals((long) testSchema.verticesForScaleFactor(scaleFactor), g.V().count().next().longValue());
         assertEquals((long) testSchema.edgesForScaleFactor(scaleFactor), g.E().count().next().longValue());
     }

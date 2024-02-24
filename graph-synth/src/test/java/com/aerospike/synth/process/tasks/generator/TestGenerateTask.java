@@ -17,6 +17,7 @@ import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.movement.test.core.AbstractMovementTest;
 import com.aerospike.movement.test.mock.MockUtil;
 import com.aerospike.movement.test.mock.encoder.MockEncoder;
+import com.aerospike.movement.test.mock.output.MockOutput;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.IOUtil;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
@@ -24,10 +25,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.aerospike.movement.config.core.ConfigurationBase.Keys.ENCODER;
 import static com.aerospike.movement.config.core.ConfigurationBase.Keys.OUTPUT;
@@ -55,31 +53,13 @@ public class TestGenerateTask extends AbstractMovementTest {
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaPath);
             put(Generator.Config.Keys.SCHEMA_PARSER, YAMLSchemaParser.class.getName());
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1));
+            put(OUTPUT, MockOutput.class.getName());
+            put(ENCODER, MockEncoder.class.getName());
         }};
-
-        final Configuration mockedConfigBase = getMockConfiguration(new HashMap<>());
         MockUtil.setDefaultMockCallbacks();
-        final Configuration taskConfigBase = Generate.getConfigStatic(new MapConfiguration(testConfig));
-
-        Configuration config = ConfigUtil.withOverrides(taskConfigBase, new MapConfiguration(new HashMap<>() {{
-            put(ENCODER, mockedConfigBase.getString(ENCODER));
-            put(OUTPUT, mockedConfigBase.getString(OUTPUT));
-        }}));
-
-        final Task generateTask = (Task) Generate.open(config);
-
-
-        List<Runtime.PHASE> phases = generateTask.getPhases();
-        Runtime runtime = LocalParallelStreamRuntime.open(config);
-        Iterator<RunningPhase> phaseIterator = runtime.runPhases(phases, config);
-        while (phaseIterator.hasNext()) {
-            final RunningPhase phase = phaseIterator.next();
-            phase.get();
-            phase.close();
-        }
-        iteratePhasesAndCloseRuntime(phaseIterator, runtime);
+        testTask(Generate.class, new MapConfiguration(testConfig));
         assertEquals(15 * scaleFactor, getHitCounter(MockEncoder.class, MockEncoder.Methods.ENCODE));
-
     }
+
 
 }
