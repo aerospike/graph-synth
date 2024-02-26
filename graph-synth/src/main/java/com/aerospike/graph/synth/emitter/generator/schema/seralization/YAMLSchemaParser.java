@@ -86,6 +86,8 @@ public class YAMLSchemaParser implements GraphSchemaParser {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        } else if (yamlSchemaFileURI.getScheme().equals("file")) {
+            return new YAMLSchemaParser(Path.of(yamlSchemaFileURI).toFile());
         } else {
             throw new RuntimeException("Unsupported URI scheme: " + yamlSchemaFileURI.getScheme());
         }
@@ -106,7 +108,7 @@ public class YAMLSchemaParser implements GraphSchemaParser {
         }
     }
 
-    public static String dump(final GraphSchema schema) {
+    public static String dumpSchema(final GraphSchema schema) {
         DumperOptions options = new DumperOptions();
         options.setIndent(4);
         options.setPrettyFlow(true);
@@ -119,4 +121,18 @@ public class YAMLSchemaParser implements GraphSchemaParser {
         String s = writer.toString().lines().filter(line -> !line.startsWith("!!")).collect(Collectors.joining("\n"));
         return s;
     }
+    public static String dump(final Object serializable) {
+        DumperOptions options = new DumperOptions();
+        options.setIndent(4);
+        options.setPrettyFlow(true);
+        // Fix below - additional configuration
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        final Yaml yaml = new Yaml(options);
+        final StringWriter writer = new StringWriter();
+        yaml.dump(serializable, writer);
+        String s = writer.toString().lines().filter(line -> !line.startsWith("!!")).collect(Collectors.joining("\n"));
+        return s;
+    }
+
 }

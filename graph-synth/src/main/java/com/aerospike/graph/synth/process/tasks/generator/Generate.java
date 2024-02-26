@@ -78,9 +78,7 @@ public class Generate extends Task {
         }
 
         public static class Keys {
-            public static final String EMITTER = "emitter";
-            public static final String OUTPUT_ID_DRIVER = "output.idDriver";
-            public static final String WORK_CHUNK_DRIVER = "emitter.workChunkDriver";
+            public static final String EMITTER = ConfigurationBase.Keys.EMITTER;
             public static final String SCALE_FACTOR = Generator.Config.Keys.SCALE_FACTOR;
         }
 
@@ -89,6 +87,7 @@ public class Generate extends Task {
     private Generate(final Configuration config) {
         super(Config.INSTANCE, config);
     }
+    
 
 
     public static Generate open(final Configuration config) {
@@ -107,10 +106,11 @@ public class Generate extends Task {
     @Override
     public Configuration getConfig(final Configuration config) {
 
-        return ConfigUtil.withOverrides( config,new MapConfiguration( new HashMap<>(){{
+        final Configuration cfg = ConfigUtil.withOverrides(config, new MapConfiguration(new HashMap<>() {{
             put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP, Generator.Config.INSTANCE.getOrDefault(Generator.Config.Keys.SCALE_FACTOR, config));
             put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, String.valueOf(Integer.valueOf(Generator.Config.INSTANCE.getOrDefault(Generator.Config.Keys.SCALE_FACTOR, config)) + 1));
         }}));
+        return cfg;
     }
     private static Configuration getConfigStatic(final Configuration config) {
         return new MapConfiguration(Config.INSTANCE.defaultConfigMap(((MapConfiguration)config).getMap()));

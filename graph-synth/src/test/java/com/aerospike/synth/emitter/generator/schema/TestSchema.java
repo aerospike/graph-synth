@@ -32,7 +32,7 @@ public abstract class TestSchema {
 
     public void writeToYAML(Path yamlPath) {
         try {
-            Files.write(yamlPath, YAMLSchemaParser.dump(TinkerPopSchemaParser.fromGraph(addToGraph(TinkerGraph.open()))).getBytes());
+            Files.write(yamlPath, YAMLSchemaParser.dumpSchema(TinkerPopSchemaParser.fromGraph(addToGraph(TinkerGraph.open()))).getBytes());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

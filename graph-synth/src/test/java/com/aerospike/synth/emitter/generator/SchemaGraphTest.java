@@ -66,7 +66,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
         //parse the yaml file to a GraphSchema
         GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
 
-        final String yamlString = YAMLSchemaParser.dump(fromYaml);
+        final String yamlString = YAMLSchemaParser.dumpSchema(fromYaml);
 
         Path tempFile = Files.createTempFile("yaml", "test");
         Files.write(tempFile,yamlString.getBytes());
