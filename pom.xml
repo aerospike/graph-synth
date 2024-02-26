@@ -22,8 +22,25 @@
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <commons-configuration2.version>2.9.0</commons-configuration2.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <tinkerpop.version>3.6.3</tinkerpop.version>
+        <tinkerpop.version>3.7.1</tinkerpop.version>
+        <local.repository>file:///tmp/maven-repository/</local.repository>
     </properties>
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>development</id>
+            <name>dev-repo</name>
+            <url>${local.repository}</url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>maven-repository</id>
+            <url>${local.repository}</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -58,6 +75,7 @@
             </testResource>
         </testResources>
         <plugins>
+
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
