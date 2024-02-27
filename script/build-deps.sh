@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 MOVEMENT_BRANCH="dev"
 #install dependencies
+if ! [ -x "$(command -v git)" ]; then
+  apt -y update && apt -y install git
+fi
+
 mkdir -p target/
 git clone https://github.com/aerospike/movement target/movement
 
