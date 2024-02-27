@@ -33,7 +33,10 @@ public class CLI {
             System.exit(0);
         }
         final List<Long> scales;
-        scales = cli.scaleFactor().orElseThrow(() -> new RuntimeException("no scale factors provided"));
+        scales = cli.scaleFactor().orElseThrow(() -> {
+            CommandLine.usage(new CLI.GraphSynthCLI(), System.out);
+            return new RuntimeException("no scale factors provided");
+        });
         Map<String, String> scaleResults = new HashMap<>();
         scales.forEach(scaleFactor -> {
             try {
@@ -56,8 +59,7 @@ public class CLI {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                if (cli.debug().isPresent())
-                    System.out.println(YAMLSchemaParser.dump(taskMonitor.status(false)));
+                if (cli.debug().isPresent()) System.out.println(YAMLSchemaParser.dump(taskMonitor.status(false)));
             }
 
             LocalParallelStreamRuntime runtime = RuntimeUtil.runtimeForTask(taskId);
@@ -81,8 +83,7 @@ public class CLI {
         });
         scaleResults.forEach((k, v) -> System.out.println(String.join(" ", k, v)));
 
-        if (!cli.testMode)
-            System.exit(0);
+        if (!cli.testMode) System.exit(0);
     }
 
     public static GraphSynthCLI parseCLI(final String[] args) {
@@ -132,14 +133,7 @@ public class CLI {
 
 
         public enum Argument {
-            SET_LONG(ArgNames.SET_LONG),
-            HELP_LONG(ArgNames.HELP_LONG),
-            DEBUG_LONG(ArgNames.DEBUG_LONG),
-            TEST_MODE(ArgNames.TEST_MODE),
-            OUTPUT_URI_LONG(ArgNames.OUTPUT_URI_LONG),
-            INPUT_URI_LONG(ArgNames.INPUT_URI_LONG),
-            SCALE_FACTOR(ArgNames.SCALE_FACTOR),
-            BATCH_SCALES(ArgNames.BATCH_SCALES);
+            SET_LONG(ArgNames.SET_LONG), HELP_LONG(ArgNames.HELP_LONG), DEBUG_LONG(ArgNames.DEBUG_LONG), TEST_MODE(ArgNames.TEST_MODE), OUTPUT_URI_LONG(ArgNames.OUTPUT_URI_LONG), INPUT_URI_LONG(ArgNames.INPUT_URI_LONG), SCALE_FACTOR(ArgNames.SCALE_FACTOR), BATCH_SCALES(ArgNames.BATCH_SCALES);
 
             private final String cliArgument;
 
@@ -202,11 +196,7 @@ public class CLI {
         }
 
         public static GraphSynthCLI fromConfig(Configuration config) {
-            List<String> args = IteratorUtils
-                    .stream(config.getKeys())
-                    .filter(key -> Argument.configKeyToArgument(key).isPresent())
-                    .map(key -> Argument.configKeyToArgument(key).get().getCLIKey() + "=" + config.getString(key))
-                    .collect(Collectors.toList());
+            List<String> args = IteratorUtils.stream(config.getKeys()).filter(key -> Argument.configKeyToArgument(key).isPresent()).map(key -> Argument.configKeyToArgument(key).get().getCLIKey() + "=" + config.getString(key)).collect(Collectors.toList());
             return fromArguments(args);
         }
 
