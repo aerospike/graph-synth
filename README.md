@@ -1,7 +1,7 @@
 # Aerospike Graph Synth
 ![Graph Synthesizer Logo](docs/img/logo-small.jpg)
 
-Graph Synth is a tool project for synthesizing graph structured datasets. 
+Graph Synth is a tool for synthesizing graph structured datasets. 
 
 You can run Graph Synth via either a traditional Command Line Interface (CLI) or via a Gremlin call() step. 
 
