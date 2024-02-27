@@ -4,7 +4,9 @@ MOVEMENT_BRANCH="dev"
 if ! [ -x "$(command -v git)" ]; then
   apt -y update && apt -y install git
 fi
-
+if ! [ -x "$(command -v mvn)" ]; then
+  apt -y update && apt -y install maven
+fi
 mkdir -p target/
 git clone https://github.com/aerospike/movement target/movement
 
