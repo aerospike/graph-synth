@@ -1,0 +1,431 @@
+rootVertexTypes:
+  - name: Person
+    likelihood: 1.0
+    chancesToCreate: 2
+  - name: Household
+    likelihood: 1.0
+    chancesToCreate: 1
+
+joining:
+  probabilityScale: 1.0
+
+
+vertexTypes:
+  - name: Person
+    outEdges:
+      - name: UsedDevice
+        likelihood: 1.0
+        chancesToCreate: 3
+      - name: LikesBeer
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: LikesCoffee
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: LikesDessert
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: HasCat
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: HasDog
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: HasHorse
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: Drives
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: HoldsPosition
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: LikesMusic
+        likelihood: 1.0
+        chancesToCreate: 1
+      - name: LivesIn
+        likelihood: 1.0
+        chancesToCreate: 1
+    properties:
+      - name: race
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: demographic
+            method: race
+      - name: sex
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: demographic
+            method: sex
+      - name: demonym
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: demographic
+            method: demonym
+      - name: educationalAttainment
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: demographic
+            method: educationalAttainment
+      - name: maritalStatus
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: demographic
+            method: maritalStatus
+  - name: Device
+    outEdges: [ ]
+    properties:
+      - name: brand
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "apple-iphone", "google-pixel" ]
+      - name: equipment
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "6", "7", "8" ]
+  - name: Beer
+    outEdges: [ ]
+    properties:
+      - name: brand
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Budweiser", "Coors", "Heineken","Sam Adams", "Yuengling" ]
+      - name: name
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: beer
+            method: name
+      - name: style
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: beer
+            method: style
+  - name: Coffee
+    outEdges: [ ]
+    properties:
+      - name: country
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Peru", "Ecuador", "Columbia", "Ethiopia", "Somalia" ]
+      - name: intensifer
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "muted", "dull", "mild", "structured", "balanced", "rounded", "soft", "faint", "delicate", "dry", "astringent", "quick", "clean", "crisp", "bright", "vibrant", "tart", "wild", "unbalanced", "sharp", "pointed", "dense", "deep", "complex", "juicy", "lingering", "dirty" ]
+      - name: body
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "watery", "tea-like", "silky", "slick", "juicy", "smooth", "syrupy", "round", "creamy", "full", "velvety", "big", "chewy", "coating" ]
+  - name: Dessert
+    outEdges: [ ]
+    properties:
+      - name: variety
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Cake", "Cookie", "Pie", "Ice Cream", "Pudding", "Sweet Bread", "Cupcake", "Cheesecake", "Brownie", "Cobbler", "Ice Cream Cake", "Doughnut", "Frozen Yogurt", "Parfait", "Sundae", "Trifle", "Cake Pop", "Fruit Cake", "Coffee Cake", "Key Lime Pie", "Upside Down Pineapple Cake" ]
+      - name: topping
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Rainbow Sprinkles", "Chocolate Chips", "Whipped Cream", "Frosting", "Peanut Butter", "Gummy Bears", "Mocha Drizzle", "Caramel", "Bacon", "Chocolate Syrup", "Chocolate Sprinkles", "Cookie Dough", "Peanuts", "Butterscotch Syrup", "Marshmallows", "Cheesecake Bites", "Walnuts", "Granola", "Toffee Bits", "Berry Compote", "Glaze", "Powdered Sugar", "Cinnamon" ]
+      - name: flavor
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Vanilla", "Chocolate", "Strawberry", "Birthday Cake", "Salted Caramel", "Banana", "Butter Pecan", "Cookies 'n Cream", "Caramel", "Apple", "Butterscotch", "Mint Chocolate Chip", "Espresso", "Butter Pecan", "Cherry", "Coconut", "Chocolate Chip Cookie Dough", "French Vanilla", "Neapolitan", "Pistachio", "Rocky Road", "Peanut Butter", "Almond", "Green Tea", "Cheesecake", "Funfetti", "Lemon", "Oatmeal", "Pumpkin", "Red Velvet", "Blondie" ]
+  - name: Cat
+    outEdges: [ ]
+    properties:
+      - name: name
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: cat
+            method: name
+      - name: breed
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: cat
+            method: breed
+  - name: Dog
+    outEdges: [ ]
+    properties:
+      - name: name
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: dog
+            method: name
+      - name: breed
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: dog
+            method: breed
+      - name: age
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: dog
+            method: age
+      - name: size
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: dog
+            method: size
+      - name: coatLength
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: dog
+            method: coatLength
+  - name: Horse
+    outEdges: [ ]
+    properties:
+      - name: name
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Noir", "Jaguar", "Ebony", "Onyx", "Domino", "Cleveland", "Adobe", "Cinnamon", "Kit Kat", "Brandy", "Autumn", "Opie", "Fiona", "Pippi Longstocking", "Peter Pan", "Russell", "Blondie", "Rapunzel", "Spirit", "Trapper", "D’oro", "Napoleon", "Pepper", "Snowball", "Lacey", "Traveller", "Scout", "Little Joe", "Jigsaw", "Pirate", "Rembrandt", "Monte", "Baymax ", "Goliath", "Universe", "Bolt", "Challenger", "Billie Jean ", "Fargo", "Jet", "Victory", "Pharaoh", "Trigger", "Champ", "Oakley", "Bonney", "Rio", "Dale", "Gene", "Cash", "Chisholm", "Buttons", "Misty", "Dolly", "Cookie", "Charlie Brown", "Kokomo ", "Olaf", "Thelwell", "Isabelle", "Randolph", "Debutante ", "Marquis", "Juliet", "Henrietta", "Vanderbilt", "Versailles", "El Jefe ", "Queen", "Boots", "Major", "Barkley", "Barnaby", "Whiskers", "Balki", "Newton", "Tigger", "Buster", "Flopsy", "Paris", "Sicily", "Beijing", "Vancouver", "Utah", "Sydney", "Berlin", "Carolina", "Passport", "London", "Mozart", "Jackson", "Beethoven", "Mona", "Dickinson", "Bard", "Da Vinci", "Sullivan", "Chopin" ]
+      - name: breed
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Abaco Barb", "Abtenauer", "Abyssinian", "Aegidienberger", "Akhal-Teke", "Albanian Horse", "Altai Horse", "Altèr Real", "American Albino", "American Cream Draft", "American Indian Horse", "American Paint Horse", "American Quarter Horse", "American Saddlebred", "American Warmblood", "Andalusian Horse", "Andravida Horse", "Anglo-Arabian", "Anglo-Arabo-Sardo", "Anglo-Kabarda", "Appaloosa", "Arabian Horse", "Ardennes Horse", "Arenberg-Nordkirchen", "Argentine Criollo", "Asturcón", "Augeron", "Asian wild Horse", "Assateague Horse", "Australian Brumby", "Australian Draught Horse", "Australian Stock Horse", "Austrian Warmblood", "Auvergne Horse", "Auxois", "Azerbaijan Horse", "Azteca Horse", "Baise Horse", "Bale", "Balearic Horse", "Balikun Horse", "Baluchi Horse", "Banker Horse", "Barb Horse", "Bardigiano", "Bashkir Curly", "Basque mountain Horse", "Bavarian Warmblood", "Belgian Horse", "Belgian Warmblood (includes Belgian Half-blood)", "Bhutia Horse", "Black Forest Horse", "Blazer Horse", "Boerperd", "Borana", "Bosnian Mountain Horse", "Boulonnais Horse", "Brabant", "Brandenburger", "Brazilian Sport Horse (Brasileiro de Hipismo)", "Breton Horse", "Brumby", "Budyonny Horse or Budenny", "Burguete Horse", "Burmese Horse", "Byelorussian Harness Horse", "Calabrese Horse", "Camargue Horse", "Camarillo White Horse", "Campeiro", "Campolina", "Canadian Horse", "Canadian Pacer", "Carolina Marsh Tacky", "Carthusian Horse", "Caspian Horse", "Castilian Horse", "Castillonnais", "Catria Horse", "Cavallo Romano della Maremma Laziale", "Cerbat Mustang", "Chickasaw Horse", "Chilean Horse also known as Chilean Corralero", "Choctaw Horse", "Cleveland Bay", "Clydesdale Horse", "Colorado Ranger", "Coldblood trotter", "Comtois Horse", "Corsican Horse", "Costa Rican Saddle Horse", "Cretan Horse", "Criollo Horse", "Croatian Coldblood", "Cuban Criollo", "Cumberland Island Horse", "Curly Horse", "Czech Warmblood", "Daliboz", "Danish Warmblood", "Danube Delta Horse", "Dole Gudbrandsdal", "or Dølahest", "Don", "Dongola Horse", "Draft Trotter", "Dutch harness Horse", "Dutch Heavy Draft", "Dutch Warmblood", "Dzungarian Horse", "East Bulgarian", "East Friesian Horse", "Estonian Draft", "Estonian Horse", "Falabella", "Faroese or Faroe Horse", "FinnHorse", "Fleuve", "Fjord Horse also called Norwegian Fjord Horse", "Florida Cracker Horse", "Foutanké or Fouta", "Frederiksborg Horse", "Freiberger", "French Trotter", "Friesian cross (includes Friesian Sport Horses)", "Friesian Horse", "Friesian SportHorse (a type of Friesian cross)", "Furioso-North Star", "Galiceno or Galiceño", "Galician Pony (Caballo de pura raza Gallega)", "Gelderland Horse", "Georgian Grande Horse", "German Warmblood or ZfDP", "Giara Horse", "Gidran", "Groningen Horse", "Gypsy Horse", "Hackney Horse", "Haflinger", "Hanoverian Horse", "Heck Horse", "Heihe Horse", "Henson Horse", "Hequ Horse", "Hirzai", "Hispano-Bretón", "Hispano-Árabe also known as Hispano or Spanish Anglo-Arab", "Holsteiner Horse", "Horro", "Hungarian Warmblood", "Icelandic Horse", "Iomud", "Irish Draught", "Irish Sport Horse sometimes called Irish Hunter", "Italian Heavy Draft", "Italian Trotter", "Jaca Navarra", "Jeju Horse", "Jutland Horse", "Kabarda Horse", "Kafa", "Kaimanawa Horses", "Kalmyk Horse", "Karabair", "Karabakh Horse also known as Azer At", "Karossier see Ostfriesen and Alt-Oldenburger", "Karachai Horse", "Kathiawari", "Kazakh Horse", "Kentucky Mountain Saddle Horse", "Kiger Mustang", "Kinsky Horse", "Kyrgyz Horse", "Kisber Felver", "Kiso Horse", "Kladruber", "Knabstrupper", "Konik", "Kundudo", "Kustanair", "Latvian Horse", "Lipizzan or Lipizzaner", "Lithuanian Heavy Draught", "Lokai", "Losino Horse", "Lusitano", "Lyngshest", "M'Bayar", "M'Par", "Malopolski", "Mallorquín", "Mangalarga", "Mangalarga Marchador", "Maremmano", "Marismeño Horse", "Marsh Tacky", "Marwari Horse", "Mecklenburger", "Međimurje Horse", "Menorquín", "Mérens Horse", "Messara Horse", "Mezőhegyesi sport-Horse (sportló)", "Mezőhegyes felver", "Metis Trotter", "Miniature Horse", "Misaki Horse", "Missouri Fox Trotter", "Monchina", "Mongolian Horse", "Mongolian Wild Horse", "Monterufolino", "Morab", "Morgan Horse", "Mountain Pleasure Horse", "Moyle Horse", "Muraközi", "Murgese", "Mustang Horse", "Namib Desert Horse", "Nangchen Horse", "National Show Horse", "Nez Perce Horse", "Nivernais Horse", "Nokota Horse", "Noma", "Nonius Horse", "Nooitgedachter", "Nordlandshest/ Lyngshest", "Noriker Horse", "Norman Cob", "Norsk Kaldblodstraver (Norwegian coldblood trotter)", "North American Single-Footer Horse", "North Swedish Horse", "Norwegian Fjord", "Novokirghiz", "Oberlander Horse", "Ogaden", "Oldenburg Horse", "Orlov trotter", "Ostfriesen and Alt-Oldenburger", "Paint", "Pampa Horse", "Paso Fino", "Pentro Horse", "Percheron", "Persano Horse", "Peruvian Paso", "Pintabian", "Pleven Horse", "Poitevin Horse also called Mulassier", "Posavac Horse", "Pottok", "Pryor Mountain Mustang", "Przewalski's Horse", "Pura Raza Española or PRE", "Purosangue Orientale", "Qatgani", "Quarab", "Quarter Horse", "Racking Horse", "Retuerta Horse", "Rhenish German Coldblood also known as Rhineland Heavy Draft", "Rhinelander Horse", "Riwoche Horse", "Rocky Mountain Horse", "Romanian SportHorse", "Rottaler", "Russian Don", "Russian Heavy Draft", "Russian Trotter", "Saddlebred", "Salerno Horse", "Samolaco Horse", "San Fratello Horse", "Santa Cruz Island Horse", "Sarcidano Horse", "Sardinian Anglo-Arab", "Schleswig Coldblood", "Schwarzwälder Kaltblut", "Selale", "Sella Italiano", "Selle Français", "Senner", "Shagya Arabian", "Shan Horse or Shan Myinn", "Shire Horse", "Siciliano indigeno", "Silesian Horse", "Sorraia", "Sokolsky Horse", "South German Coldblood also known as Süddeutsches Kaltblut", "Soviet Heavy Draft", "Spanish Barb see Barb Horse", "Spanish Jennet Horse", "Spanish Mustang", "Spanish-Norman Horse", "Spanish Tarpan", "Spiti Horse", "Spotted Saddle Horse", "Standardbred Horse", "Suffolk Punch", "Svensk Kallblodstravare (Swedish coldblood trotter)", "Swedish Ardennes", "Swedish Warmblood", "Swiss Warmblood", "Taishū Horse", "Takhi", "Tawleed", "Tchernomor", "Tennessee Walking Horse", "Tersk Horse", "Thoroughbred", "Tinker Horse", "Tiger Horse", "Tolfetano", "Tori Horse", "Trait Du Nord", "Trakehner", "Tsushima", "Tuigpaard", "Ukrainian Riding Horse", "Unmol Horse", "Uzunyayla", "Ventasso Horse (Cavallo Del Ventasso)", "Virginia highlander", "Vlaamperd", "Vladimir Heavy Draft", "Vyatka", "Waler Horse", "Waler", "Walkaloosa", "Warmblood", "Warlander", "Welsh Cob (Section D)", "Westphalian Horse", "Wielkopolski", "Württemberger or Württemberg", "Xilingol Horse", "Yakutian Horse", "Yili Horse", "Yonaguni Horse", "Zaniskari", "Zweibrücker", "Žemaitukas", "Zhemaichu" ]
+  - name: Vehicle
+    outEdges: [ ]
+    properties:
+      - name: make
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ 'BMW', 'Audi', 'Toyota', 'Chevy', 'Ford', 'Dodge', 'Lincoln', 'Buick', 'Honda', 'Nissan' ]
+      - name: transmission
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ 'Automanual', 'Automatic', 'CVT', 'Manual' ]
+      - name: driveType
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ '4x2/2-wheel drive', '4x4/4-wheel drive', 'AWD', 'FWD', 'RWD' ]
+      - name: carType
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ 'Cargo Van', 'Convertible', 'Coupe', 'Crew Cab Pickup', 'Extended Cab Pickup', 'Hatchback', 'Minivan', 'Passenger Van', 'Regular Cab Pickup', 'SUV', 'Sedan', 'Wagon' ]
+      - name: fuelType
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ 'Compressed Natural Gas', 'Diesel', 'E-85/Gasoline', 'Electric', 'Gasoline', 'Gasoline Hybrid', 'Ethanol' ]
+  - name: Job
+    outEdges: [ ]
+    properties:
+      - name: industry
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: company
+            method: industry
+      - name: title
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: job
+            method: title
+      - name: position
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: job
+            method: position
+      - name: seniority
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: job
+            method: seniority
+  - name: MusicPref
+    outEdges: [ ]
+    properties:
+      - name: instrument
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ 'Electric Guitar', 'Acoustic Guitar', 'Flute', 'Trumpet', 'Clarinet', 'Cello', 'Harp', 'Xylophone', 'Harmonica', 'Accordion', 'Organ', 'Piano', 'Ukelele', 'Saxophone', 'Drums', 'Violin', 'Bass Guitar', 'Oboe' ]
+      - name: band
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "AC/DC", "Adam and the Ants", "Afrika Bambaataa", "Al Foster", "Alan Parsons", "Alex Chilton", "Amy Winehouse", "Annie Lennox", "Arctic Monkeys", "B.B. King",
+                       "Bauhaus", "The Beatles", "Beck", "Billy Idol", "The Birthday Party", "Björk", "Blinker The Star", "Blondie", "Blur", "Bob Dylan", "Bob Marley (and the Wailers)",
+                       "Brian Wilson", "Bruce Springsteen", "Buzzcocks", "Captain Beefheart", "Carlos Santana", "Cat Anderson", "Cat Stevens", "Catherine Wheel", "Chic", "Chris Isaak",
+                       "Chrissie Hynde", "Chuck Berry", "The Clash", "Cliff Richard (and the Shadows)", "Coldplay", "Cootie Williams", "Cortinas", " The", "The Cramps", "The Cranberries",
+                       "Cream", "The Cure", "David Bowie", "David Gilmour", "Deepest Blue", "Devo", "Dizzy Gillespie", "Dr Feelgood", "Duke Ellington", "Ed Sheeran", "Ella Fitzgerald",
+                       "Elton John", "Elvis Costello", "Elvis Presley", "Eric Clapton", "The Faces", "Fats Domino", "Flaming Lips", "Florence and the Machine", "Foo Fighters", "Frank Sinatra",
+                       "Frank Zappa", "Frightened Rabbit", "George Michael", "Grace Jones", "Green Day", "Guns N' Roses", "Herbie Hancock", "Horace Silver", "Hugh Masekela", "Ian Dury", "Iggy Pop",
+                       "The Jam", "James Brown", "Jeff Beck", "Jeff Buckley", "Jimi Hendrix", "John Coltrane", "John Lydon", "Johnny Borrell", "Johnny Cash", "Johnny Marr", "Joni Mitchell", "Joy Division",
+                       "K.D Lang", "Kasabian", "Kate Bush", "Keith Moon", "Keith Richards", "The Kinks", "Kiss", "The La's", "Led Zeppelin", "Lenny Kravitz", "Leonard Cohen", "Liam Gallagher",
+                       "The Libertines", "Madness", "Madonna", "Manic Street Preachers", "Marc Bolan", "Marianne Faithfull", "Marilyn Manson", "Maroon 5", "The Mars Volta", "Max Roach", "Michael Jackson",
+                       "Miles Davis", "Morrissey", "Muddy Waters", "Mumford and Sons", "Muse", "Neil Young", "New Order", "Nick Cave", "Nigel Kennedy", "Nina Simone", "Nirvana", "Noel Gallagher",
+                       "O.A.R.", "Oasis", "Offspring", "Ozzy Osbourne", "Paramore", "Pat Metheny", "Patti Smith", "Paul Weller", "Pearl Jam", "Pete Townshend", "Phil Collins", "Phish", "Pink Floyd", "PJ Harvey",
+                       "The Police", "The Pretenders", "Primal Scream", "Prince", "Program The Dead", "Pulp", "Queen", "Radiohead", "The Ramones", "Red Hot Chili Peppers", "R.E.M.", "Rick Wright",
+                       "Rod Stewart", "The Rolling Stones", "Rory Gallagher", "Roxy Music", "Roy Hargrove", "Rufus Wainwright", "Run-D.M.C.", "Ryan Adams", "Sex Pistols", "Simply Red",
+                       "Sinead O'connor", "Siouxsie and The Banshees", "The Slits", "The Smiths", "Sonic Youth", "The Specials", "Squeeze", "Status Quo", "Stereophonics", "Stone Roses",
+                       "Syd Barrett", "Thelonius Monk", "Thin Lizzy", "Thornley", "Tina Turner", "Tom Jones", "Tom Robinson", "Tom Waits", "U2", "The Undertones", "Van Morrison", "Velvet Revolver",
+                       "White Stripes", "The Who", "The Yardbirds", "Yumi Matsutoya" ]
+  - name: Appliance
+    outEdges: [ ]
+    properties:
+      - name: brand
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ 'Admiral','Amana','Blue Star','Bosch','Electrolux','Fagor','Franke','IKEA','KitchenAid','LG','Samsung','Sharp','Siemens','Whirlpool' ]
+      - name: equipment
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ 'Air ioniser', 'Air purifier', 'Appliance plug', 'Aroma lamp', 'Attic fan', 'Bachelor griller', 'Back boiler', 'Beverage opener', 'Blender', 'Box mangle', 'Can opener', 'Ceiling fan', 'Central vacuum cleaner', 'Clothes dryer', 'Clothes iron', 'Cold-pressed juicer', 'Combo washer dryer', 'Dish draining closet', 'Dishwasher', 'Domestic robot', 'Drawer dishwasher', 'Electric water boiler', 'Evaporative cooler', 'Exhaust hood', 'Fan heater', 'Flame supervision device', 'Forced-air', 'Futon dryer', 'Garbage disposal unit', 'Gas appliance', 'Go-to-bed matchbox', 'HVAC', 'Hair dryer', 'Hair iron', 'Hob (hearth)', 'Home server', 'Humidifier', 'Icebox', 'Kimchi refrigerator', 'Mangle (machine)', 'Micathermic heater', 'Microwave oven', 'Mousetrap', 'Oil heater', 'Oven', 'Paper shredder', 'Patio heater', 'Radiator (heating)', 'Refrigerator', 'Sewing machine', 'Solar water heater', 'Space heater', 'Steam mop', 'Stove', 'Sump pump', 'Television', 'Tie press', 'Toaster and toaster ovens', 'Trouser press', 'Vacuum cleaner', 'Washing machine', 'Water cooker', 'Water heater', 'Water purifier', 'Window fan' ]
+
+
+  - name: Household
+    properties:
+      - name: address
+        likelihood: 1.0
+        valueGenerator:
+          impl: FormattedRandomUSAddress
+          args: { }
+    outEdges:
+      - name: Contains
+        likelihood: 1.0
+        chancesToCreate: 2
+      - name: Hosts
+        likelihood: 1.0
+        chancesToCreate: 1
+
+edgeTypes:
+  - name: UsedDevice
+    outVertex: Person
+    inVertex: Device
+    properties: [ ]
+  - name: LikesCoffee
+    outVertex: Person
+    inVertex: Coffee
+    properties: [ ]
+  - name: LikesBeer
+    outVertex: Person
+    inVertex: Beer
+    properties: [ ]
+  - name: LikesDessert
+    outVertex: Person
+    inVertex: Dessert
+    properties: [ ]
+  - name: HasCat
+    outVertex: Person
+    inVertex: Cat
+    properties: [ ]
+  - name: HasDog
+    outVertex: Person
+    inVertex: Dog
+    properties: [ ]
+  - name: HasHorse
+    outVertex: Person
+    inVertex: Horse
+    properties: [ ]
+  - name: Drives
+    outVertex: Person
+    inVertex: Vehicle
+    properties: [ ]
+  - name: HoldsPosition
+    outVertex: Person
+    inVertex: Job
+    properties: [ ]
+  - name: LikesMusic
+    outVertex: Person
+    inVertex: MusicPref
+    properties: [ ]
+
+  - name: LivesIn
+    outVertex: Person
+    inVertex: Household
+    joiningEdge: True
+    joiningConfig:
+      impl: Distribution
+      args:
+        outVertexDistribution:
+          1: 2
+        inVertexDistribution:
+          3: 4
+
+    properties: [ ]
+
+  - name: Contains
+    outVertex: Household
+    inVertex: Appliance
+    properties: [ ]
+
+  - name: Hosts
+    outVertex: Household
+    inVertex: Device
+    properties: [ ]

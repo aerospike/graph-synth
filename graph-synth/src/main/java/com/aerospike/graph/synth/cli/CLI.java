@@ -28,11 +28,12 @@ public class CLI {
         RuntimeUtil.registerTaskAlias(Generate.class.getSimpleName(), Generate.class);
         RuntimeUtil.openClass(Generate.class, ConfigUtil.empty());
         GraphSynthCLI cli = parseCLI(args);
+        if (cli.help().isPresent()) {
+            CommandLine.usage(new CLI.GraphSynthCLI(), System.out);
+            System.exit(0);
+        }
         final List<Long> scales;
-        if (cli.batchScales().isPresent())
-            scales = cli.batchScales().get();
-        else
-            scales = List.of(cli.scaleFactor().get());
+        scales = cli.scaleFactor().orElseThrow(() -> new RuntimeException("no scale factors provided"));
         Map<String, String> scaleResults = new HashMap<>();
         scales.forEach(scaleFactor -> {
             try {
@@ -50,12 +51,13 @@ public class CLI {
             final UUID taskId = (UUID) plugin.orElseThrow(() -> new RuntimeException("Could not load CLI")).call().next();
             final Task.StatusMonitor taskMonitor = Task.StatusMonitor.from(taskId);
             while (taskMonitor.isRunning()) {
-                System.out.println(YAMLSchemaParser.dump(taskMonitor.status(true)));
                 try {
                     Thread.sleep(1000L);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+                if (cli.debug().isPresent())
+                    System.out.println(YAMLSchemaParser.dump(taskMonitor.status(false)));
             }
 
             LocalParallelStreamRuntime runtime = RuntimeUtil.runtimeForTask(taskId);
@@ -173,7 +175,6 @@ public class CLI {
         public static Configuration toConfig(GraphSynthCLI cli) {
             final Map<String, String> results = new HashMap<>();
             cli.overrides().ifPresent(results::putAll);
-            cli.scaleFactor().ifPresent(it -> results.put(Argument.SCALE_FACTOR.getConfigKey(), it.toString()));
             cli.outputUri().ifPresent(it -> results.put(Argument.OUTPUT_URI_LONG.getConfigKey(), it.toString()));
             cli.inputUri().ifPresent(it -> results.put(Argument.INPUT_URI_LONG.getConfigKey(), it.toString()));
             cli.testMode().ifPresent(it -> results.put(Argument.TEST_MODE.getConfigKey(), it.toString()));
@@ -182,10 +183,10 @@ public class CLI {
             return new MapConfiguration(results);
         }
 
-        public static Configuration taskConfig(GraphSynthCLI cli) {
+        public static Configuration taskConfig(GraphSynthCLI cli, Configuration config) {
             final Map<String, String> results = new HashMap<>();
             cli.overrides().ifPresent(results::putAll);
-            cli.scaleFactor().ifPresent(it -> results.put(Generator.Config.Keys.SCALE_FACTOR, it.toString()));
+            cli.scaleFactor().ifPresent(it -> results.put(Generator.Config.Keys.SCALE_FACTOR, Optional.ofNullable(config.getString(Argument.SCALE_FACTOR.getConfigKey())).orElseThrow(() -> new RuntimeException("no scale factor configured"))));
             cli.outputUri().ifPresent(it -> results.put(DirectoryOutput.Config.Keys.OUTPUT_DIRECTORY, Path.of(URI.create(it.toString())).toAbsolutePath().toString()));
             cli.inputUri().ifPresent(it -> results.put(YAMLSchemaParser.Config.Keys.YAML_FILE_URI, it.toString()));
             cli.testMode().ifPresent(it -> results.put(Argument.TEST_MODE.getConfigKey(), it.toString()));
@@ -225,10 +226,8 @@ public class CLI {
         protected String outputUri;
         @CommandLine.Option(names = {ArgNames.INPUT_URI_LONG}, description = "Directory URI for source files, supported schemes file:// ")
         protected String inputUri;
-        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "scale factor")
+        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "scale factor, comma delimited list")
         protected String scaleFactor;
-        @CommandLine.Option(names = {ArgNames.BATCH_SCALES}, description = "Comma delimited list of scale factors to generate datasets for")
-        protected String batchScales;
         @CommandLine.Option(names = {ArgNames.HELP_LONG}, description = "Help")
         protected Boolean help;
         @CommandLine.Option(names = {ArgNames.SET_LONG}, description = "Set or override configuration key")
@@ -251,12 +250,9 @@ public class CLI {
             return Optional.ofNullable(inputUri).map(URI::create);
         }
 
-        public Optional<Long> scaleFactor() {
-            return Optional.ofNullable(scaleFactor).map(Long::valueOf);
+        public Optional<List<Long>> scaleFactor() {
+            return Optional.ofNullable(scaleFactor).map(scalesString -> Arrays.stream(scalesString.split(",")).map(Long::valueOf).collect(Collectors.toList()));
         }
 
-        public Optional<List<Long>> batchScales() {
-            return Optional.ofNullable(batchScales).map(scalesString -> Arrays.stream(scalesString.split(",")).map(Long::valueOf).collect(Collectors.toList()));
-        }
     }
 }

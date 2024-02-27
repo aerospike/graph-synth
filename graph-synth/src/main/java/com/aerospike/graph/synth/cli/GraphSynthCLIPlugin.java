@@ -1,7 +1,5 @@
 package com.aerospike.graph.synth.cli;
 
-import com.aerospike.graph.synth.emitter.generator.Generator;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.movement.encoding.files.csv.GraphCSVEncoder;
@@ -65,7 +63,7 @@ public class GraphSynthCLIPlugin extends Plugin {
     }
 
     public static Plugin open(final Configuration configuration) {
-        return new GraphSynthCLIPlugin(CLI.GraphSynthCLI.fromConfig(configuration));
+        return new GraphSynthCLIPlugin(CLI.GraphSynthCLI.fromConfig(configuration), configuration);
     }
 
     public Iterator<Object> call() {
@@ -108,27 +106,26 @@ public class GraphSynthCLIPlugin extends Plugin {
             throw new RuntimeException("could not create directory " + outputPath);
 
 
-        if (!(cli.scaleFactor().isPresent() || cli.batchScales().isPresent())) {
+        if (cli.scaleFactor().isEmpty()){
             throw new RuntimeException("you must set a scale factor or provide a list of scale factors to batch");
         }
 
-        Configuration cliconfig = CLI.GraphSynthCLI.taskConfig(cli);
+        Configuration cliconfig = CLI.GraphSynthCLI.taskConfig(cli,config);
         cliconfig.getKeys().forEachRemaining(key -> {
             config.setProperty(key, cliconfig.getString(key));
         });
 
-
-        task = (Task) RuntimeUtil.openClassRef(RuntimeUtil.getTaskClassByAlias(Generate.class.getSimpleName()).getName(), config);
-        Pair<LocalParallelStreamRuntime, Iterator<Object>> x = runTask(task, CLI.GraphSynthCLI.taskConfig(cli)).orElseThrow(() -> new RuntimeException("Failed to run task: " + Generate.class.getSimpleName()));
+        Configuration taskConfig = ConfigUtil.withOverrides(config, CLI.GraphSynthCLI.taskConfig(cli,config));
+        task = (Task) RuntimeUtil.openClassRef(RuntimeUtil.getTaskClassByAlias(Generate.class.getSimpleName()).getName(), taskConfig);
+        Pair<LocalParallelStreamRuntime, Iterator<Object>> x = runTask(task, taskConfig).orElseThrow(() -> new RuntimeException("Failed to run task: " + Generate.class.getSimpleName()));
         Iterator<Object> resultIterator = (Iterator<Object>) x.right;
         return resultIterator;
     }
 
 
-    protected GraphSynthCLIPlugin(final CLI.GraphSynthCLI cli) {
-        super(Config.INSTANCE, Config.INSTANCE.defaults());
+    protected GraphSynthCLIPlugin(final CLI.GraphSynthCLI cli, Configuration configuration) {
+        super(Config.INSTANCE, configuration);
         this.cli = cli;
-
     }
 
     @Override
