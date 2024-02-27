@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 source script/build-deps.sh
-mvn clean test
+${MAVEN_PATH:-"mvn"} clean test

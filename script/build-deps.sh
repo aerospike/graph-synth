@@ -11,7 +11,7 @@ if ! [ -f "target/apache-maven-3.9.6/bin/mvn" ]; then
   tar -zxvf apache-maven-3.9.6-bin.tar.gz
   cd ..
 fi
-alias mvn=$(realpath target/apache-maven-3.9.6/bin/mvn)
+MAVEN_PATH=$(realpath target/apache-maven-3.9.6/bin/mvn)
 git clone https://github.com/aerospike/movement target/movement
-cd target/movement && git pull origin $MOVEMENT_BRANCH && git checkout $MOVEMENT_BRANCH && mvn -DskipTests clean install
+cd target/movement && git pull origin $MOVEMENT_BRANCH && git checkout $MOVEMENT_BRANCH && $MAVEN_PATH -DskipTests clean install
 cd $REPO_PATH
