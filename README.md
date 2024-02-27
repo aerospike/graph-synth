@@ -44,7 +44,7 @@ Most configuration options can be provided on the command line. You will however
 
 You can declare a schema in YAML or in Gremlin
 
-Sample schema YAML files are provided in conf/schema
+Sample schema YAML files are provided in [the conf directory](conf/schema)
 
 Read more about Schema declerations in [the docs section](docs/Schema.md)
 ## Building
