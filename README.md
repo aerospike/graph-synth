@@ -55,3 +55,6 @@ Maven is used as the build tool for this project, a simple [script](script/build
 ## License
 
 This project is provided under the Apache2 software  [license](LICENSE).
+
+## No Warranty
+GraphSynth is intended for testing and pre-production environments. It is not recommended for production operations.
