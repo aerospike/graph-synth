@@ -12,22 +12,21 @@ To get started, download the latest jar release  [here](https://github.com/aeros
 ```shell
 $ java -jar graph-synth/target/GraphSynth-1.0.0-SNAPSHOT.jar --help
 Graph Synth, by Aerospike.
-Usage: GraphSynth [--debug] [--help] [--test-mode] [--input-uri=<inputUri>]
+Usage: GraphSynth [--debug] [--help] [--input-uri=<inputUri>]
                   [--output-uri=<outputUri>] [--scale-factor=<scaleFactor>]
                   [--set=<String=String>]...
-      --debug       Show Debug Output
-      --help        Help
+      --debug   Show Debug Output
+      --help    Help
       --input-uri=<inputUri>
-                    Directory URI for source files, supported schemes file://
+                Directory URI for source files, supported schemes file://
       --output-uri=<outputUri>
-                    Set the output URI. Supported URI schemes are
-                     ws://
-                     wss://
+                Set the output URI. Supported URI schemes are
+                 ws://
+                 wss://
       --scale-factor=<scaleFactor>
-                    scale factor, comma delimited list
+                scale factor, comma delimited list
       --set=<String=String>
-                    Set or override configuration key
-      --test-mode   Test Mode
+                Set or override configuration key
 ```
 
 A real world example:

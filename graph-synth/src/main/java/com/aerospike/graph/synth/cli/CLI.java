@@ -222,7 +222,7 @@ public class CLI {
         protected Boolean help;
         @CommandLine.Option(names = {ArgNames.SET_LONG}, description = "Set or override configuration key")
         protected Map<String, String> overrides;
-        @CommandLine.Option(names = {ArgNames.TEST_MODE}, description = "Test Mode")
+        @CommandLine.Option(names = {ArgNames.TEST_MODE}, description = "Test Mode", hidden = true)
         protected Boolean testMode = false;
 
         @CommandLine.Option(names = {ArgNames.DEBUG_LONG}, description = "Show Debug Output")
