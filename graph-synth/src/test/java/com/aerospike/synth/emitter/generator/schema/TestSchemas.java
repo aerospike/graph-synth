@@ -13,7 +13,9 @@ import com.aerospike.movement.runtime.core.driver.impl.RangedOutputIdDriver;
 import com.aerospike.movement.runtime.core.driver.impl.RangedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.runtime.core.local.RunningPhase;
+import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProvider;
+import com.aerospike.movement.tinkerpop.common.GraphProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
 import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
@@ -56,7 +58,7 @@ public class TestSchemas {
 
 
     @Test
-    public void generateFromGremlinStatementsSimple() {
+    public void generateFromGremlinStatementsSimple() throws Exception {
         Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
         testSchema.addToGraph(schemaGraph);
 
@@ -71,7 +73,7 @@ public class TestSchemas {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
-                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
+                    put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
                     put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
@@ -80,11 +82,14 @@ public class TestSchemas {
                     put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
-        final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
-        g.V().drop().iterate();
+        final Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
+        graph.traversal().V().drop().iterate();
 
-        testTask(Generate.class,testConfig);
-        assertEquals((long) testSchema.verticesForScaleFactor(scaleFactor), g.V().count().next().longValue());
-        assertEquals((long) testSchema.edgesForScaleFactor(scaleFactor), g.E().count().next().longValue());
+        testTask(Generate.class, testConfig);
+        long countV = graph.traversal().V().count().next().longValue();
+        long countE = graph.traversal().E().count().next().longValue();
+        graph.close();
+        assertEquals((long) testSchema.verticesForScaleFactor(scaleFactor), countV);
+        assertEquals((long) testSchema.edgesForScaleFactor(scaleFactor), countE);
     }
 }

@@ -5,6 +5,7 @@ import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.movement.encoding.files.csv.GraphCSVEncoder;
 import com.aerospike.movement.encoding.tinkerpop.TinkerPopTraversalEncoder;
 import com.aerospike.movement.output.files.DirectoryOutput;
+import com.aerospike.movement.output.tinkerpop.TinkerPopTraversalOutput;
 import com.aerospike.movement.plugin.Plugin;
 import com.aerospike.movement.plugin.tinkerpop.PluginServiceFactory;
 import com.aerospike.movement.process.core.Task;
@@ -74,11 +75,15 @@ public class GraphSynthCLIPlugin extends Plugin {
             overrides.forEach(config::setProperty);
         }
         List.of(Generate.class).forEach(it -> RuntimeUtil.registerTaskAlias(it.getSimpleName(), it));
+        final URI inputURI = cli.inputUri().orElseThrow(() -> new RuntimeException("Schema URI not set"));
+        final URI outputURI = cli.outputUri().orElseThrow(() -> new RuntimeException("Output URI not set"));
 
-        String outputScheme = cli.outputUri().get().getScheme();
+        String outputScheme = outputURI.getScheme();
         if (outputScheme.equals("ws") || outputScheme.equals("wss")) {
             final String host = cli.outputUri().get().getHost();
             final Integer port = cli.outputUri().get().getPort();
+            config.setProperty(ENCODER, TinkerPopTraversalEncoder.class.getName());
+            config.setProperty(OUTPUT, TinkerPopTraversalOutput.class.getName());
             config.setProperty(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, RemoteGraphTraversalProvider.class.getName());
             config.setProperty(RemoteGraphTraversalProvider.Config.Keys.HOST, host);
             config.setProperty(RemoteGraphTraversalProvider.Config.Keys.PORT, port);
@@ -86,36 +91,38 @@ public class GraphSynthCLIPlugin extends Plugin {
             config.setProperty(ENCODER, GraphCSVEncoder.class.getName());
             config.setProperty(OUTPUT, DirectoryOutput.class.getName());
             config.setProperty(DirectoryOutput.Config.Keys.OUTPUT_DIRECTORY, cli.outputUri().get().toString());
+            final Path outputPath = Path.of(outputURI);
+            if (outputPath.toFile().exists()) {
+                FileUtil.recursiveDelete(outputPath);
+            }
+            if (!outputPath.toFile().mkdirs())
+                throw new RuntimeException("could not create directory " + outputPath);
         } else {
             throw new RuntimeException("output uri must have scheme file for csv output or ws/wss for Gremlin Server websocket connection");
         }
+        if (inputURI.getScheme().equals("ws") || inputURI.getScheme().equals("wss")) {
 
-        final URI inputURI = cli.inputUri().orElseThrow(() -> new RuntimeException("Schema URI not set"));
-        final URI outputURI = cli.outputUri().orElseThrow(() -> new RuntimeException("Output URI not set"));
 
-        final Path inputPath = Path.of(inputURI);
-        if (!inputPath.toFile().exists()) {
-            throw new RuntimeException(inputPath + " does not exist");
+        } else if (inputURI.getScheme().equals("file")) {
+            final Path inputPath = Path.of(inputURI);
+            if (!inputPath.toFile().exists())
+                throw new RuntimeException(inputPath + " does not exist");
+
+        } else {
+            throw new RuntimeException("input uri must have scheme file for yaml schema or ws/wss for websocket connection to access schema stored in Gremlin Server");
         }
 
-        final Path outputPath = Path.of(outputURI);
-        if (outputPath.toFile().exists()) {
-            FileUtil.recursiveDelete(outputPath);
-        }
-        if (!outputPath.toFile().mkdirs())
-            throw new RuntimeException("could not create directory " + outputPath);
 
-
-        if (cli.scaleFactor().isEmpty()){
+        if (cli.scaleFactor().isEmpty()) {
             throw new RuntimeException("you must set a scale factor or provide a list of scale factors to batch");
         }
 
-        Configuration cliconfig = CLI.GraphSynthCLI.taskConfig(cli,config);
+        Configuration cliconfig = CLI.GraphSynthCLI.taskConfig(cli, config);
         cliconfig.getKeys().forEachRemaining(key -> {
             config.setProperty(key, cliconfig.getString(key));
         });
 
-        Configuration taskConfig = ConfigUtil.withOverrides(config, CLI.GraphSynthCLI.taskConfig(cli,config));
+        Configuration taskConfig = ConfigUtil.withOverrides(config, CLI.GraphSynthCLI.taskConfig(cli, config));
         task = (Task) RuntimeUtil.openClassRef(RuntimeUtil.getTaskClassByAlias(Generate.class.getSimpleName()).getName(), taskConfig);
         Pair<LocalParallelStreamRuntime, Iterator<Object>> x = runTask(task, taskConfig).orElseThrow(() -> new RuntimeException("Failed to run task: " + Generate.class.getSimpleName()));
         Iterator<Object> resultIterator = (Iterator<Object>) x.right;
@@ -146,7 +153,7 @@ public class GraphSynthCLIPlugin extends Plugin {
     }
 
     @Override
-    public void close() throws Exception {
+    public void onClose() {
 
     }
 }

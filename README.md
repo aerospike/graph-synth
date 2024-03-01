@@ -10,7 +10,7 @@ To get started, download the latest jar release  [here](https://github.com/aeros
 
 ## Usage
 ```shell
-$ java -jar graph-synth/target/GraphSynth-1.0.0-SNAPSHOT.jar --help
+$ java -jar GraphSynth-1.0.0.jar --help
 Graph Synth, by Aerospike.
 Usage: GraphSynth [--debug] [--help] [--input-uri=<inputUri>]
                   [--output-uri=<outputUri>] [--scale-factor=<scaleFactor>]
@@ -18,32 +18,63 @@ Usage: GraphSynth [--debug] [--help] [--input-uri=<inputUri>]
       --debug   Show Debug Output
       --help    Help
       --input-uri=<inputUri>
-                Directory URI for source files, supported schemes file://
+                File or Gremlin Server URI for schema, supported schemes:
+                 file://
+                 ws://
+                 wss://
       --output-uri=<outputUri>
-                Set the output URI. Supported URI schemes are
+                File or Gremlin Server URI for output, supported schemes:
+                 file://
                  ws://
                  wss://
       --scale-factor=<scaleFactor>
-                scale factor, comma delimited list
+                Comma delimited list of scale factors
       --set=<String=String>
                 Set or override configuration key
 ```
 
-A real world example:
+Some real world examples:
+
+Using a yaml schema file to write out csv data:
 ```shell
-$ java -jar graph-synth/target/GraphSynth-1.0.0-SNAPSHOT.jar \
-  --output-uri=file:///tmp/generate-cli \
+$ java -jar GraphSynth-1.0.0.jar \
   --input-uri=file:/home/user/software/graph-synth/conf/schema/gdemo_schema.yaml \
+  --output-uri=file:/tmp/output-data \
+    --scale-factor=10
+```
+
+Using a schema graph to write out csv data at 3 different scales:
+```shell
+$ java -jar GraphSynth-1.0.0.jar \
+  --input-uri=ws://my-gremlin-schema-server:8182/g \
+  --output-uri=file:/tmp/output-data \
   --scale-factor=10,100,1000
+```
+
+Using a schema graph to write out csv data:
+```shell
+$ java -jar GraphSynth-1.0.0.jar \
+  --input-uri=ws://my-gremlin-schema-server:8182/g \
+  --output-uri=file:/tmp/output-data \
+  --scale-factor=66,100000
+```
+
+Using a schema graph to write data directly do a different graph, both graphs are served as different traversal endpoints:  
+note that only 1 scale factor is supported when writing directly to a graph
+```shell
+$ java -jar GraphSynth-1.0.0.jar \
+  --input-uri=ws://my-gremlin-schema-server:8182/schema \
+  --output-uri=ws://my-gremlin-schema-server:8182/g \
+  --scale-factor=77
 ```
 
 ## Configuration and Schema
 
 Most configuration options can be provided on the command line. You will however need to provide a Graph Schema
 
-You can declare a schema in YAML or in Gremlin
+You can declare a schema in yaml or in Gremlin
 
-Sample schema YAML files are provided in [the conf directory](conf/schema)
+Sample schema yaml files are provided in [the conf directory](conf/schema)
 
 Read more about Schema declerations in [the docs section](docs/Schema.md)
 ## Building
@@ -57,4 +88,5 @@ Maven is used as the build tool for this project, a simple [script](script/build
 This project is provided under the Apache2 software  [license](LICENSE).
 
 ## No Warranty
-GraphSynth is intended for testing and pre-production environments. It is not recommended for production operations.
+Graph Synth is provided without warranty and is intended for testing and pre-production environments. 
+It is not recommended for production operations.

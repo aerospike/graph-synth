@@ -23,6 +23,7 @@ import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProvider;;
+import com.aerospike.movement.tinkerpop.common.GraphProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
 import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
@@ -52,8 +53,11 @@ public class SchemaGraphIntegration {
 
     @Before
     @After
-    public void clearSchemaGraph() {
+    public void clearSchemaGraph() throws Exception {
         InMemorySchemaGraphProvider.getGraphInstance().traversal().V().drop().iterate();
+        Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
+        graph.traversal().V().drop().iterate();
+        graph.close();
     }
 
     public static void addSimplestSchemaToGraph(final Graph schemaGraph) {
@@ -61,7 +65,7 @@ public class SchemaGraphIntegration {
     }
 
     @Test
-    public void generateFromGremlinStatementsSimple() {
+    public void generateFromGremlinStatementsSimple() throws Exception {
         Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
         addSimplestSchemaToGraph(schemaGraph);
 
@@ -76,7 +80,7 @@ public class SchemaGraphIntegration {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
-                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
+                    put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
                     put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
@@ -86,19 +90,21 @@ public class SchemaGraphIntegration {
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
-        final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
-        g.V().drop().iterate();
+        final Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
+        graph.traversal().V().drop().iterate();
 
+        testTask(Generate.class, testConfig);
+        long countV = graph.traversal().V().count().next().longValue();
+        long countE = graph.traversal().E().count().next().longValue();
+        graph.close();
 
-        testTask(Generate.class,testConfig);
-
-        assertEquals(2L, g.V().count().next().longValue());
-        assertEquals(1L, g.E().count().next().longValue());
+        assertEquals(2L, countV);
+        assertEquals(1L, countE);
 
     }
 
     @Test
-    public void generateFromGraphSON() {
+    public void generateFromGraphSON() throws Exception {
         final Long scaleFactor = 1L;
         final File yamlFile = IOUtil.copyFromResourcesIntoNewTempFile("simplest_schema.yaml");
         GraphSchema schema = YAMLSchemaParser.from(yamlFile.toPath()).parse();
@@ -114,7 +120,7 @@ public class SchemaGraphIntegration {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
-                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
+                    put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
                     put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
@@ -124,17 +130,19 @@ public class SchemaGraphIntegration {
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
-        final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
-        g.V().drop().iterate();
+        final Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
+        graph.traversal().V().drop().iterate();
 
-
-        testTask(Generate.class,testConfig);
-        assertEquals(2L, g.V().count().next().longValue());
-        assertEquals(1L, g.E().count().next().longValue());
+        testTask(Generate.class, testConfig);
+        long countV = graph.traversal().V().count().next().longValue();
+        long countE = graph.traversal().E().count().next().longValue();
+        graph.close();
+        assertEquals(2L, countV);
+        assertEquals(1L, countE);
     }
 
     @Test
-    public void simplestSchema() {
+    public void simplestSchema() throws Exception {
         final Long scaleFactor = 1L;
         final File schemaFile = IOUtil.copyFromResourcesIntoNewTempFile("simplest_schema.yaml");
 
@@ -147,7 +155,7 @@ public class SchemaGraphIntegration {
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
                     put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
                     put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
-                    put(Generator.Config.Keys.SCALE_FACTOR,String.valueOf(scaleFactor));
+                    put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
 
                     put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
                     put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
@@ -159,14 +167,16 @@ public class SchemaGraphIntegration {
                 }});
         System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
 
-        final GraphTraversalSource g = SharedEmptyTinkerGraphTraversalProvider.getGraphInstance().traversal();
-        g.V().drop().iterate();
+        final Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
+        graph.traversal().V().drop().iterate();
 
+        testTask(Generate.class, testConfig);
+        long countV = graph.traversal().V().count().next().longValue();
+        long countE = graph.traversal().E().count().next().longValue();
+        graph.close();
 
-        testTask(Generate.class,testConfig);
-
-        assertEquals(2L, g.V().count().next().longValue());
-        assertEquals(1L, g.E().count().next().longValue());
+        assertEquals(2L, countV);
+        assertEquals(1L, countE);
         GraphSchema schema = YAMLSchemaParser.from(schemaFile.toPath()).parse();
         TinkerPopSchemaParser.writeGraphSON(schema, Path.of("target/simplest_schema.json"));
     }

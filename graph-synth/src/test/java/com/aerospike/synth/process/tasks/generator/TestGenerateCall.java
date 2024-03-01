@@ -23,6 +23,7 @@ import com.aerospike.synth.emitter.generator.SchemaGraphIntegration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,12 +43,16 @@ import static org.junit.Assert.assertEquals;
 public class TestGenerateCall {
     @Before
     @After
-    public void clearSchemaGraph() {
+    public void clearSchemaGraph() throws Exception {
         InMemorySchemaGraphProvider.getGraphInstance().traversal().V().drop().iterate();
+        Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
+        graph.traversal().V().drop().iterate();
+        graph.close();
     }
 
     @Test
-    public void testGeneratePlugin() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+    public void testGeneratePlugin() throws Exception {
+
         RuntimeUtil.registerTaskAlias(Generate.class.getSimpleName(), Generate.class);
         final Long TEST_SCALE_FACTOR = 100L;
         Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
@@ -59,18 +64,17 @@ public class TestGenerateCall {
                     put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1)); //TinkerGraph is not thread safe
                 }});
 
-        final Graph graph = SharedEmptyTinkerGraphGraphProvider.getGraphInstance();
-        graph.traversal().V().drop().iterate();
+        final Graph controlGraph = TinkerGraph.open();
         final Configuration config = new MapConfiguration(configMap);
         final Object plugin = RuntimeUtil.openClassRef(CallStepPlugin.class.getName(), config);
 
-        plugin.getClass().getMethod(PluginInterface.Methods.PLUG_INTO, Object.class).invoke(plugin, graph);
-        System.out.println(graph.traversal().call("--list").toList());
+        plugin.getClass().getMethod(PluginInterface.Methods.PLUG_INTO, Object.class).invoke(plugin, controlGraph);
+        System.out.println(controlGraph.traversal().call("--list").toList());
 
         MockUtil.setDefaultMockCallbacks();
         final GraphProvider inputGraphProvider = SharedTinkerClassicGraphProvider.open(config);
         long start = System.nanoTime();
-        Map<String, Object> x = (Map<String, Object>) graph.traversal()
+        Map<String, Object> x = (Map<String, Object>) controlGraph.traversal()
                 .call(Generate.class.getSimpleName())
                 .with(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName())
                 .with(SCHEMA_PARSER, TinkerPopSchemaParser.class.getName())
@@ -83,7 +87,7 @@ public class TestGenerateCall {
         UUID id = (UUID) x.get("id");
         System.out.println(x);
 
-        Iterator<?> status = graph.traversal()
+        Iterator<?> status = controlGraph.traversal()
                 .call(PluginServiceFactory.TASK_STATUS)
                 .with(LocalParallelStreamRuntime.TASK_ID_KEY, id.toString());
 
@@ -91,11 +95,13 @@ public class TestGenerateCall {
         RuntimeUtil.waitTask(id);
         long elapsed = System.nanoTime() - start;
         System.out.printf("elapsed time: %d ms\n", TimeUnit.NANOSECONDS.toMillis(elapsed));
-
+        Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
         long loadedVertexCount = graph.traversal().V().count().next();
         long loadedEdgeCount = graph.traversal().E().count().next();
+        graph.close();
         long expectedVertexCount = TEST_SCALE_FACTOR * 2;
         long expectedEdgeCount = TEST_SCALE_FACTOR * 1;
+
         System.out.printf("%d vertices Generated, %d expected\n", loadedVertexCount, expectedVertexCount);
         assertEquals(expectedVertexCount, loadedVertexCount);
         System.out.printf("%d edges Generated, %d expected\n", loadedEdgeCount, expectedEdgeCount);

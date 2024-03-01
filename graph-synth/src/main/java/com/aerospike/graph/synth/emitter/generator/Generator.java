@@ -179,7 +179,7 @@ public class Generator extends Loadable implements Emitter {
 
     //Close methods twelfth.
     @Override
-    public void close() {
+    public void onClose() {
 
     }
 

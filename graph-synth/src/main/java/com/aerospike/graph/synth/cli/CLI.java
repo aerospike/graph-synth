@@ -59,7 +59,7 @@ public class CLI {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                if (cli.debug().isPresent()) System.out.println(YAMLSchemaParser.dump(taskMonitor.status(false)));
+                if (cli.debug().isPresent()) System.out.println(YAMLSchemaParser.dump(taskMonitor.status(true)));
             }
 
             LocalParallelStreamRuntime runtime = RuntimeUtil.runtimeForTask(taskId);
@@ -212,11 +212,11 @@ public class CLI {
             return Optional.ofNullable(testMode);
         }
 
-        @CommandLine.Option(names = {ArgNames.OUTPUT_URI_LONG}, description = "Set the output URI. Supported URI schemes are \n ws:// \n wss://")
+        @CommandLine.Option(names = {ArgNames.OUTPUT_URI_LONG}, description = "File or Gremlin Server URI for output, supported schemes:\n file:// \n ws:// \n wss://")
         protected String outputUri;
-        @CommandLine.Option(names = {ArgNames.INPUT_URI_LONG}, description = "Directory URI for source files, supported schemes file:// ")
+        @CommandLine.Option(names = {ArgNames.INPUT_URI_LONG}, description = "File or Gremlin Server URI for schema, supported schemes:\n file:// \n ws:// \n wss:// ")
         protected String inputUri;
-        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "scale factor, comma delimited list")
+        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "Comma delimited list of scale factors")
         protected String scaleFactor;
         @CommandLine.Option(names = {ArgNames.HELP_LONG}, description = "Help")
         protected Boolean help;
