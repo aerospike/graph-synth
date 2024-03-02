@@ -78,9 +78,9 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
             Object x = RuntimeUtil.openClassRef(config.getString(Config.Keys.GRAPH_PROVIDER), config);
             if (GraphProvider.class.isAssignableFrom(x.getClass()))
                 g = ((GraphProvider) x).getProvided(GraphProvider.GraphProviderContext.INPUT).traversal();
-            else if (TraversalProvider.class.isAssignableFrom(x.getClass())){
+            else if (TraversalProvider.class.isAssignableFrom(x.getClass())) {
                 g = ((TraversalProvider) x).getProvided(GraphProvider.GraphProviderContext.INPUT);
-            }else{
+            } else {
                 throw new IllegalArgumentException("could not load schema graph");
             }
         } else {
@@ -107,15 +107,11 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
             propertySchema.likelihood = (double) getSubKeyFromElement(tp3SchemaVertex, tp3VertexProperty.key(),
                     SchemaBuilder.Keys.LIKELIHOOD).orElse(1.0);
             final GeneratorConfig valueConfig = new GeneratorConfig();
-            final String implClassName = (String) getSubKeyFromElement(tp3SchemaVertex, tp3VertexProperty.key(), SchemaBuilder.Keys.VALUE_GENERATOR_IMPL).orElseThrow(() ->
+            final String implClassName = (String) getSubKeyFromElement(tp3SchemaVertex, tp3VertexProperty.key(), SchemaBuilder.Keys.VALUE_GENERATOR).orElseThrow(() ->
                     new IllegalArgumentException("No value generator implementation specified for property " + tp3VertexProperty.key())
             );
-            final Map<String, Object> generatorArgs;
-            try {
-                generatorArgs = (Map<String, Object>) getSubKeyFromElement(tp3SchemaVertex, tp3VertexProperty.key(), SchemaBuilder.Keys.VALUE_GENERATOR_ARGS).orElseThrow();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            final Map<String, Object> generatorArgs = getKeyValuesForSubKey(schemaG, tp3SchemaVertex, tp3VertexProperty.key(), SchemaBuilder.Keys.VALUE_GENERATOR).orElseThrow();
+
             valueConfig.impl = implClassName;
             valueConfig.args = generatorArgs;
             propertySchema.valueGenerator = valueConfig;
@@ -146,7 +142,34 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
         if (!tp3ele.properties(sk).hasNext()) {
             return Optional.empty();
         }
-        return Optional.of(tp3ele.value(subKey(key, subKey)));
+        return Optional.of(tp3ele.properties(subKey(key, subKey)).next().value());
+    }
+
+    public static Optional<Map<String, Object>> getKeyValuesForSubKey(GraphTraversalSource g, final Element tp3ele, final String key, final String subKey) {
+        String sk = subKey(key, subKey);
+        if (!tp3ele.properties(sk).hasNext()) {
+            return Optional.empty();
+        }
+        final Map<String, Object> metaProps = new HashMap<>();
+        if (Edge.class.isAssignableFrom(tp3ele.getClass())) {
+            g.E(tp3ele)
+                    .properties()
+                    .toList()
+                    .stream()
+                    .filter(prop -> prop.key().startsWith(sk))
+                    .filter(prop -> !prop.key().equals(sk))
+                    .forEach(prop -> metaProps.put(prop.key().replace(sk + ".", ""), prop.value()));
+        } else {
+            g.V(tp3ele)
+                    .properties()
+                    .toList()
+                    .stream()
+                    .filter(prop -> prop.key().startsWith(sk))
+                    .filter(prop -> !prop.key().equals(sk))
+                    .forEach(prop -> metaProps.put(prop.key().replace(sk + ".", ""), prop.value()));
+        }
+
+        return Optional.of(metaProps);
     }
 
     private EdgeSchema fromTinkerPop(final Edge tp3SchemaEdge) {
@@ -165,10 +188,15 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
             propertySchema.likelihood = (double) getSubKeyFromElement(tp3SchemaEdge, tp3EdgeProperty.key(),
                     SchemaBuilder.Keys.LIKELIHOOD).orElse(1.0);
             final GeneratorConfig valueConfig = new GeneratorConfig();
-            final String implClassName = (String) getSubKeyFromElement(tp3SchemaEdge, tp3EdgeProperty.key(),
-                    SchemaBuilder.Keys.VALUE_GENERATOR_IMPL).orElseThrow();
-            final Map<String, Object> generatorArgs = (Map<String, Object>) getSubKeyFromElement(tp3SchemaEdge, tp3EdgeProperty.key(),
-                    SchemaBuilder.Keys.VALUE_GENERATOR_ARGS).orElse(new HashMap<>());
+            final String implClassName;
+            try {
+                implClassName = (String) getSubKeyFromElement(tp3SchemaEdge, tp3EdgeProperty.key(),
+                        SchemaBuilder.Keys.VALUE_GENERATOR).orElseThrow();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            final Map<String, Object> generatorArgs = getKeyValuesForSubKey(schemaG, tp3SchemaEdge, tp3EdgeProperty.key(), SchemaBuilder.Keys.VALUE_GENERATOR).orElseThrow();
+
             valueConfig.impl = implClassName;
             valueConfig.args = generatorArgs;
             propertySchema.valueGenerator = valueConfig;
@@ -181,11 +209,11 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
     @Override
     public GraphSchema parse() {
         final SchemaBuilder builder = SchemaBuilder.create();
-        schemaG.V().forEachRemaining(tp3Vertex -> {
+        schemaG.V().toList().forEach(tp3Vertex -> {
             final VertexSchema vertexSchema = fromTinkerPop(tp3Vertex);
             builder.withVertexType(vertexSchema);
         });
-        schemaG.V().E().forEachRemaining(tp3Edge -> {
+        schemaG.E().toList().forEach(tp3Edge -> {
             final EdgeSchema edgeSchema = fromTinkerPop(tp3Edge);
             builder.withEdgeType(edgeSchema);
         });
@@ -248,6 +276,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
     public static GraphSchema fromGraph(final Graph graph) {
         return new TinkerPopSchemaTraversalParser(graph.traversal()).parse();
     }
+
     public static GraphSchema fromTraversal(final GraphTraversalSource g) {
         return new TinkerPopSchemaTraversalParser(g).parse();
     }

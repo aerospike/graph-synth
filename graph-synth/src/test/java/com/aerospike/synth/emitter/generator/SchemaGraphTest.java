@@ -92,7 +92,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
 
         //parse the graph instance back into a GraphSchema
         GraphSchema fromGraph = TinkerPopSchemaTraversalParser.open(config).parse();
-        graph.close();
+//        graph.close();
         //compare the two GraphSchema instances, deep equality is implemented by each schema def class
         assertTrue(fromGraph.equals(fromYaml));
         assertTrue(fromYaml.equals(fromGraph));

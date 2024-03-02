@@ -23,7 +23,7 @@ import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProv
 import com.aerospike.movement.tinkerpop.common.GraphProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.IOUtil;
-import com.aerospike.synth.emitter.generator.schema.TestSchema;
+import com.aerospike.synth.emitter.generator.schema.ExampleSchemas;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -51,7 +51,7 @@ public class SchemaGraphIntegration {
     }
 
     public static void addSimplestSchemaToGraph(final Graph schemaGraph) {
-        TestSchema.SimplestTestSchema.INSTANCE.addToGraph(schemaGraph);
+        ExampleSchemas.SimplestTestSchema.INSTANCE.addToGraph(schemaGraph);
     }
 
     @Test

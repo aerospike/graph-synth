@@ -7,7 +7,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ import java.util.Map;
 import static com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder.Keys.*;
 import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
 
-public abstract class TestSchema {
+public abstract class ExampleSchemas {
     public Graph addToGraph(Graph schemaGraph) {
         GraphTraversalSource sg = schemaGraph.traversal();
         traversal(sg).iterate();
@@ -55,8 +54,8 @@ public abstract class TestSchema {
         return convertToString(traversal(TinkerGraph.open().traversal()));
     }
 
-    public static class SimplestTestSchema extends TestSchema {
-        public static final TestSchema INSTANCE = new SimplestTestSchema();
+    public static class SimplestTestSchema extends ExampleSchemas {
+        public static final ExampleSchemas INSTANCE = new SimplestTestSchema();
 
         @Override
         Long edgesForScaleFactor(Long scaleFactor) {
@@ -78,8 +77,8 @@ public abstract class TestSchema {
         }
     }
 
-    public static class BenchmarkTestData extends TestSchema {
-        public static final TestSchema INSTANCE = new BenchmarkTestData();
+    public static class BenchmarkTestData extends ExampleSchemas {
+        public static final ExampleSchemas INSTANCE = new BenchmarkTestData();
 
         public static class Keys {
             public static class PROPERTY {
@@ -124,16 +123,18 @@ public abstract class TestSchema {
                     .property(ENTRYPOINT, true)
                     .property(subKey(ENTRYPOINT, CHANCES_TO_CREATE), 1)
                     .property(subKey(ENTRYPOINT, LIKELIHOOD), 1.0)
-                    .property("partner_id.value.generator.impl", ValueGenerator.RandomDigitSequence.class.getName())
-                    .property("partner_id.value.generator.args", MapUtil.of("digits", 12))
-
+                    .property("partner_id", "String")
+                    .property("partner_id.value.generator", ValueGenerator.RandomDigitSequence.class.getName())
+                    .property("partner_id.value.generator.digits", 12)
 
                     .addV(Keys.V_LABEL.ACCOUNT).as(Keys.V_LABEL.ACCOUNT)
-                    .property("partner_id.value.generator.impl", ValueGenerator.RandomDigitSequence.class.getName())
-                    .property("partner_id.value.generator.args", MapUtil.of("digits", 8))
-
-
-                    .addE(EDGE_TYPE).from(Keys.V_LABEL.PARTNER_IDENTITY).to(Keys.V_LABEL.ACCOUNT);
+                    .property("partner_id", "String")
+                    .property("partner_id.value.generator", ValueGenerator.RandomDigitSequence.class.getName())
+                    .property("partner_id.value.generator.digits", 8)
+                    .addE(EDGE_TYPE).from(Keys.V_LABEL.PARTNER_IDENTITY).to(Keys.V_LABEL.ACCOUNT)
+                    .property("edge_prop", "String")
+                    .property("edge_prop.value.generator", ValueGenerator.RandomDigitSequence.class.getName())
+                    .property("edge_prop.value.generator.digits", 8);
         }
     }
 

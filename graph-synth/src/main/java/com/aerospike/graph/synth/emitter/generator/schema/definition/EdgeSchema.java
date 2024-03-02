@@ -44,7 +44,8 @@ public class EdgeSchema {
             final Iterator<PropertySchema> i = other.properties.stream().filter(it -> it.name.equals(p.name)).iterator();
             if (!i.hasNext())
                 return false;
-            if (!i.next().equals(p))
+            PropertySchema next = i.next();
+            if (!next.equals(p))
                 return false;
         }
         return true;

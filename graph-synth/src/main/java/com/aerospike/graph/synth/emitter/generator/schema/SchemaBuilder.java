@@ -19,11 +19,9 @@ import java.util.*;
 
 public class SchemaBuilder {
     public static class Keys {
-        public static final String VERTEX_TYPE = "vertexType";
         public static final String CHANCES_TO_CREATE = "create.chances";
         public static final String LIKELIHOOD = "likelihood";
-        public static final String VALUE_GENERATOR_IMPL = "value.generator.impl";
-        public static final String VALUE_GENERATOR_ARGS = "value.generator.args";
+        public static final String VALUE_GENERATOR = "value.generator";
         public static final String ENTRYPOINT = "entrypoint";
         public static final String EDGE_TYPE = "edgeType";
         public static final String OUT_VERTEX_DISTRIBUTION = "outVertexDistribution";

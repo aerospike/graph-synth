@@ -17,17 +17,23 @@ import com.aerospike.graph.synth.util.generator.SchemaUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
 
 
 public class SchemaGraphUtil {
+    public static Object[] mapToKeyValues(Map<?, ?> map) {
+        List<Object> results = new ArrayList<>();
+        map.forEach((k, v) -> results.addAll(List.of(k, v)));
+        return results.toArray(new Object[0]);
+    }
+
     public static void writeToTraversalSource(final GraphTraversalSource g, final GraphSchema graphSchema) {
         final Map<String, RootVertexSpec> rootVertexSpecMap = new HashMap<>();
         graphSchema.rootVertexTypes.stream().forEach(it -> rootVertexSpecMap.put(it.name, it));
@@ -41,8 +47,10 @@ public class SchemaGraphUtil {
             vertexSchema.properties.forEach(vertexPropertySchema -> {
                 g.V(v).property(vertexPropertySchema.name, vertexPropertySchema.type).next();
                 g.V(v).property(subKey(vertexPropertySchema.name, SchemaBuilder.Keys.LIKELIHOOD), vertexPropertySchema.likelihood).next();
-                g.V(v).property(subKey(vertexPropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR_IMPL), vertexPropertySchema.valueGenerator.impl).next();
-                g.V(v).property(subKey(vertexPropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR_ARGS), vertexPropertySchema.valueGenerator.args).next();
+                g.V(v).property(subKey(vertexPropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR), vertexPropertySchema.valueGenerator.impl).next();
+                vertexPropertySchema.valueGenerator.args.forEach((key, value) -> {
+                    g.V(v).property(subKey(subKey(vertexPropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR), key), value).next();
+                });
             });
         });
         graphSchema.edgeTypes.forEach(edgeSchema -> {
@@ -61,8 +69,11 @@ public class SchemaGraphUtil {
             edgeSchema.properties.forEach(edgePropertySchema -> {
                 g.E(schemaEdge).property(edgePropertySchema.name, edgePropertySchema.type).next();
                 g.E(schemaEdge).property(subKey(edgePropertySchema.name, SchemaBuilder.Keys.LIKELIHOOD), edgePropertySchema.likelihood).next();
-                g.E(schemaEdge).property(subKey(edgePropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR_IMPL), edgePropertySchema.valueGenerator.impl).next();
-                g.E(schemaEdge).property(subKey(edgePropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR_ARGS), edgePropertySchema.valueGenerator.args).next();
+                g.E(schemaEdge).property(subKey(edgePropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR), edgePropertySchema.valueGenerator.impl).next();
+                edgePropertySchema.valueGenerator.args.forEach((key, value) -> {
+                    String propkey = subKey(subKey(edgePropertySchema.name, SchemaBuilder.Keys.VALUE_GENERATOR), key);
+                    g.E(schemaEdge).property(propkey, value).next();
+                });
             });
         });
     }

@@ -34,14 +34,14 @@ import static junit.framework.TestCase.assertEquals;
 @RunWith(Parameterized.class)
 public class TestSchemas {
 
-    private final TestSchema testSchema;
+    private final ExampleSchemas testSchema;
 
     @Parameterized.Parameters
-    public static Collection<TestSchema> data() {
-        return List.of(TestSchema.SimplestTestSchema.INSTANCE, TestSchema.BenchmarkTestData.INSTANCE);
+    public static Collection<ExampleSchemas> data() {
+        return List.of(ExampleSchemas.BenchmarkTestData.INSTANCE);
     }
 
-    public TestSchemas(TestSchema testSchema) {
+    public TestSchemas(ExampleSchemas testSchema) {
         this.testSchema = testSchema;
     }
 

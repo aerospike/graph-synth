@@ -28,7 +28,8 @@ public class GraphSchema {
                     .filter(it -> it.label().equals(e.label())).iterator();
             if (!i.hasNext())
                 return false;
-            if (!i.next().equals(e))
+            EdgeSchema next = i.next();
+            if (!next.equals(e))
                 return false;
         }
         for (final VertexSchema v : vertexTypes) {
