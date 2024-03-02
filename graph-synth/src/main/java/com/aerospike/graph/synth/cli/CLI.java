@@ -12,8 +12,12 @@ import com.aerospike.movement.tinkerpop.common.RemoteGraphTraversalProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
+import com.aerospike.synth.emitter.generator.schema.ExampleSchemas;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -24,12 +28,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class CLI {
+    private static final String CLEAR_MESSAGE = "Will only write into an empty graph, use --clear to force and erase your existing graph";
+
     public static void main(String[] args) throws Exception {
         RuntimeUtil.registerTaskAlias(Generate.class.getSimpleName(), Generate.class);
         RuntimeUtil.openClass(Generate.class, ConfigUtil.empty());
         GraphSynthCLI cli = parseCLI(args);
         if (cli.help().isPresent()) {
             CommandLine.usage(new CLI.GraphSynthCLI(), System.out);
+            System.exit(0);
+        }
+        if (GraphSynthCLI.ioutil(cli)) {
             System.exit(0);
         }
         final List<Long> scales;
@@ -54,10 +63,27 @@ public class CLI {
                 Path scalePath = Path.of(cli.outputUri().get()).resolve(String.valueOf(scaleFactor));
                 config.setProperty(GraphSynthCLI.Argument.OUTPUT_URI_LONG.getConfigKey(), scalePath.toUri().toString());
             }
-            if(!cli.inputUri().get().getScheme().equals("file")){
+            if (!cli.inputUri().get().getScheme().equals("file")) {
                 config.setProperty(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
                 config.setProperty(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, RemoteGraphTraversalProvider.class.getName());
-                config.setProperty(RemoteGraphTraversalProvider.Config.Keys.INPUT_URI,cli.inputUri().get().toString());
+                config.setProperty(RemoteGraphTraversalProvider.Config.Keys.INPUT_URI, cli.inputUri().get().toString());
+            }
+            if (cli.outputUri().get().getScheme().startsWith("ws")) {
+                RemoteGraphTraversalProvider.URIConnectionInfo info = RemoteGraphTraversalProvider.URIConnectionInfo.from(cli.outputUri().get());
+                GraphTraversalSource g = AnonymousTraversalSource
+                        .traversal()
+                        .withRemote(DriverRemoteConnection.using(info.host, info.port, info.traversalSourceName));
+                if (g.V().hasNext() && (cli.clear().isEmpty() || !cli.clear().get())) {
+                    System.err.println(CLEAR_MESSAGE);
+                    System.exit(1);
+                } else {
+                    g.V().drop().iterate();
+                    try {
+                        g.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
 
             Optional<GraphSynthCLIPlugin> plugin = loadPlugin(config);
@@ -70,13 +96,13 @@ public class CLI {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                if (cli.debug().isPresent()) System.out.println(YAMLSchemaParser.dump(taskMonitor.status(true)));
+                System.out.println(YAMLSchemaParser.dump(taskMonitor.status(true)));
             }
 
             LocalParallelStreamRuntime runtime = RuntimeUtil.runtimeForTask(taskId);
             Optional<RunningPhase> rp = RuntimeUtil.runningPhaseForTask(taskId);
 
-            if (rp.isPresent()) {
+            if (rp.isPresent() && cli.debug().isPresent()) {
                 Configuration runningConfig = rp.get().config;
                 System.out.println(runningConfig);
             }
@@ -142,13 +168,23 @@ public class CLI {
             public static final String OUTPUT_URI_LONG = "--output-uri";
             public static final String INPUT_URI_LONG = "--input-uri";
             public static final String SCALE_FACTOR = "--scale-factor";
-            public static final String BATCH_SCALES = "--batch-scales";
+            public static final String LIST_SAMPLES = "--list-sample-schemas";
+            public static final String LOAD_SAMPLE = "--load-sample";
+            public static final String DUMP_SAMPLE = "--dump-sample";
+            public static final String EXPORT_SCHEMA = "--export-schema";
+            public static final String LOAD_SCHEMA = "--load-schema";
+            public static final String CLEAR = "--clear";
         }
 
 
         public enum Argument {
-            SET_LONG(ArgNames.SET_LONG), HELP_LONG(ArgNames.HELP_LONG), DEBUG_LONG(ArgNames.DEBUG_LONG), TEST_MODE(ArgNames.TEST_MODE), OUTPUT_URI_LONG(ArgNames.OUTPUT_URI_LONG), INPUT_URI_LONG(ArgNames.INPUT_URI_LONG), SCALE_FACTOR(ArgNames.SCALE_FACTOR), BATCH_SCALES(ArgNames.BATCH_SCALES);
-
+            SET_LONG(ArgNames.SET_LONG),
+            HELP_LONG(ArgNames.HELP_LONG),
+            DEBUG_LONG(ArgNames.DEBUG_LONG),
+            TEST_MODE(ArgNames.TEST_MODE),
+            OUTPUT_URI_LONG(ArgNames.OUTPUT_URI_LONG),
+            INPUT_URI_LONG(ArgNames.INPUT_URI_LONG),
+            SCALE_FACTOR(ArgNames.SCALE_FACTOR);
             private final String cliArgument;
 
             Argument(String cliArgument) {
@@ -218,49 +254,176 @@ public class CLI {
             return fromArguments(args);
         }
 
-        private Optional<Boolean> help() {
-            return Optional.ofNullable(help);
-        }
-
-        private Optional<Boolean> debug() {
-            return Optional.ofNullable(debug);
-        }
-
-        private Optional<Boolean> testMode() {
-            return Optional.ofNullable(testMode);
-        }
 
         @CommandLine.Option(names = {ArgNames.OUTPUT_URI_LONG}, description = "File or Gremlin Server URI for output, supported schemes:\n file:// \n ws:// \n wss://")
         protected String outputUri;
-        @CommandLine.Option(names = {ArgNames.INPUT_URI_LONG}, description = "File or Gremlin Server URI for schema, supported schemes:\n file:// \n ws:// \n wss:// ")
-        protected String inputUri;
-        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "Comma delimited list of scale factors")
-        protected String scaleFactor;
-        @CommandLine.Option(names = {ArgNames.HELP_LONG}, description = "Help")
-        protected Boolean help;
-        @CommandLine.Option(names = {ArgNames.SET_LONG}, description = "Set or override configuration key")
-        protected Map<String, String> overrides;
-        @CommandLine.Option(names = {ArgNames.TEST_MODE}, description = "Test Mode", hidden = true)
-        protected Boolean testMode = false;
-
-        @CommandLine.Option(names = {ArgNames.DEBUG_LONG}, description = "Show Debug Output")
-        protected Boolean debug = false;
-
-        public Optional<Map<String, String>> overrides() {
-            return Optional.ofNullable(overrides);
-        }
 
         public Optional<URI> outputUri() {
             return Optional.ofNullable(outputUri).map(URI::create);
         }
 
+        @CommandLine.Option(names = {ArgNames.INPUT_URI_LONG}, description = "File or Gremlin Server URI for schema, supported schemes:\n file:// \n ws:// \n wss:// ")
+        protected String inputUri;
+
         public Optional<URI> inputUri() {
             return Optional.ofNullable(inputUri).map(URI::create);
         }
 
+        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "Comma delimited list of scale factors")
+        protected String scaleFactor;
+
         public Optional<List<Long>> scaleFactor() {
             return Optional.ofNullable(scaleFactor).map(scalesString -> Arrays.stream(scalesString.split(",")).map(Long::valueOf).collect(Collectors.toList()));
         }
+
+        @CommandLine.Option(names = {ArgNames.HELP_LONG}, description = "Help")
+        protected Boolean help;
+
+        private Optional<Boolean> help() {
+            return Optional.ofNullable(help);
+        }
+
+        @CommandLine.Option(names = {ArgNames.SET_LONG}, description = "Set or override configuration key")
+        protected Map<String, String> overrides;
+
+        public Optional<Map<String, String>> overrides() {
+            return Optional.ofNullable(overrides);
+        }
+
+        @CommandLine.Option(names = {ArgNames.TEST_MODE}, description = "Test Mode", hidden = true)
+        protected Boolean testMode = false;
+
+        private Optional<Boolean> testMode() {
+            return Optional.ofNullable(testMode);
+        }
+
+        @CommandLine.Option(names = {ArgNames.DEBUG_LONG}, description = "Show Debug Output")
+        protected boolean debug;
+
+        private Optional<Boolean> debug() {
+            return debug ? Optional.of(true) : Optional.empty();
+        }
+
+        @CommandLine.Option(names = {ArgNames.LIST_SAMPLES}, description = "List Sample Schemas")
+        protected Boolean listSamples;
+
+        public Optional<Boolean> listSamples() {
+            return Optional.ofNullable(listSamples);
+        }
+
+        @CommandLine.Option(names = {ArgNames.LOAD_SAMPLE}, description = "Load Sample to Gremlin Server")
+        protected String loadSample;
+
+        public Optional<String> loadSample() {
+            return Optional.ofNullable(loadSample);
+        }
+
+        @CommandLine.Option(names = {ArgNames.DUMP_SAMPLE}, description = "Dump Sample Schema to YAML")
+        protected String dumpSample;
+
+        public Optional<String> dumpSample() {
+            return Optional.ofNullable(dumpSample);
+        }
+
+        @CommandLine.Option(names = {ArgNames.EXPORT_SCHEMA}, description = "Export Schema from Gremlin Server to YAML file")
+        protected boolean exportSchema;
+
+        public Optional<Boolean> exportSchema() {
+            return exportSchema ? Optional.of(true) : Optional.empty();
+        }
+
+        @CommandLine.Option(names = {ArgNames.LOAD_SCHEMA}, description = "Load YAML Schema to Gremlin Server")
+        protected boolean loadSchema;
+
+        public Optional<Boolean> loadSchema() {
+            return loadSchema ? Optional.of(true) : Optional.empty();
+        }
+
+        @CommandLine.Option(names = {ArgNames.CLEAR}, description = "Show Debug Output")
+        protected Boolean clear;
+
+        private Optional<Boolean> clear() {
+            return Optional.ofNullable(clear);
+        }
+
+        public static boolean ioutil(GraphSynthCLI cli) {
+            if (!(cli.listSamples().isPresent() ||
+                    cli.loadSample().isPresent() ||
+                    cli.dumpSample().isPresent() ||
+                    cli.loadSchema().isPresent() ||
+                    cli.exportSchema().isPresent())) {
+                return false;
+            }
+            if (cli.listSamples().isPresent()) {
+                ExampleSchemas.samples.stream().map(it -> it.getClass().getSimpleName()).collect(Collectors.toList()).forEach(System.out::println);
+                return true;
+            }
+            if (cli.loadSample().isPresent()) {
+                String sampleName = cli.loadSample().get();
+                ExampleSchemas sample = ExampleSchemas.samples.stream().filter(it -> it.getClass().getSimpleName().equals(sampleName)).findFirst().orElseThrow(() -> new RuntimeException("sample schema: " + sampleName + " not found"));
+                if (!cli.outputUri().isPresent() || !cli.outputUri().get().getScheme().startsWith("ws"))
+                    throw new RuntimeException("must load into a ws:// or wss:// outputURI");
+                RemoteGraphTraversalProvider.URIConnectionInfo info = RemoteGraphTraversalProvider.URIConnectionInfo.from(cli.outputUri().get());
+                GraphTraversalSource g = AnonymousTraversalSource
+                        .traversal()
+                        .withRemote(DriverRemoteConnection.using(info.host, info.port, info.traversalSourceName));
+                if (g.V().hasNext() && (cli.clear().isEmpty() || !cli.clear().get())) {
+                    System.err.println(CLEAR_MESSAGE);
+                    System.exit(1);
+                } else {
+                    g.V().drop().iterate();
+                }
+                sample.writeToTraversalSource(g);
+                return true;
+            }
+            if (cli.dumpSample().isPresent()) {
+                String sampleName = cli.dumpSample().get();
+                ExampleSchemas sample = ExampleSchemas.samples.stream().filter(it -> it.getClass().getSimpleName().equals(sampleName)).findFirst().orElseThrow();
+                if (!cli.outputUri().isPresent() || !cli.outputUri().get().getScheme().startsWith("file"))
+                    throw new RuntimeException("must dump into a yaml file:// outputURI");
+                sample.writeToYAML(Path.of(cli.outputUri().get()));
+                return true;
+            }
+            if (cli.exportSchema().isPresent()) {
+                if (!cli.inputUri().isPresent() || !cli.inputUri().get().getScheme().startsWith("ws"))
+                    throw new RuntimeException("must export from a ws:// or wss:// inputURI");
+                if (!cli.outputUri().isPresent() || !cli.outputUri().get().getScheme().startsWith("file"))
+                    throw new RuntimeException("must export into a yaml file:// outputURI");
+
+                RemoteGraphTraversalProvider.URIConnectionInfo info = RemoteGraphTraversalProvider.URIConnectionInfo.from(cli.inputUri().get());
+                GraphTraversalSource g = AnonymousTraversalSource
+                        .traversal()
+                        .withRemote(DriverRemoteConnection.using(info.host, info.port, info.traversalSourceName));
+                try {
+                    Files.write(Path.of(cli.outputUri().get()), YAMLSchemaParser.dumpSchema(TinkerPopSchemaTraversalParser.fromTraversal(g)).getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return true;
+            }
+            if (cli.loadSchema().isPresent()) {
+                if (!cli.outputUri().isPresent() || !cli.inputUri().get().getScheme().startsWith("file"))
+                    throw new RuntimeException("must load from a yaml file:// inputURI");
+                if (!cli.inputUri().isPresent() || !cli.outputUri().get().getScheme().startsWith("ws"))
+                    throw new RuntimeException("must load to a ws:// or wss:// outputURI");
+
+                RemoteGraphTraversalProvider.URIConnectionInfo info = RemoteGraphTraversalProvider.URIConnectionInfo.from(cli.outputUri().get());
+                GraphTraversalSource g = AnonymousTraversalSource
+                        .traversal()
+                        .withRemote(DriverRemoteConnection.using(info.host, info.port, info.traversalSourceName));
+                if (g.V().hasNext() && (cli.clear().isEmpty() || !cli.clear().get())) {
+                    System.err.println(CLEAR_MESSAGE);
+                    System.exit(1);
+                } else {
+                    g.V().drop().iterate();
+                }
+                TinkerPopSchemaTraversalParser.writeTraversalSource(g, YAMLSchemaParser.from(cli.inputUri().get()).parse());
+                return true;
+            }
+            return true;
+
+        }
+
 
     }
 }

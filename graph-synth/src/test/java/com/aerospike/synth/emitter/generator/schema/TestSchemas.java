@@ -38,7 +38,7 @@ public class TestSchemas {
 
     @Parameterized.Parameters
     public static Collection<ExampleSchemas> data() {
-        return List.of(ExampleSchemas.BenchmarkTestData.INSTANCE);
+        return List.of(ExampleSchemas.Benchmark2024.INSTANCE);
     }
 
     public TestSchemas(ExampleSchemas testSchema) {

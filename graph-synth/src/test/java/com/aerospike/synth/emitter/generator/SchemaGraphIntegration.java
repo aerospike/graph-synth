@@ -51,7 +51,7 @@ public class SchemaGraphIntegration {
     }
 
     public static void addSimplestSchemaToGraph(final Graph schemaGraph) {
-        ExampleSchemas.SimplestTestSchema.INSTANCE.addToGraph(schemaGraph);
+        ExampleSchemas.Simplest.INSTANCE.addToGraph(schemaGraph);
     }
 
     @Test
@@ -59,6 +59,44 @@ public class SchemaGraphIntegration {
         Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
         addSimplestSchemaToGraph(schemaGraph);
 
+        final Long scaleFactor = 1L;
+
+        final Configuration testConfig = new MapConfiguration(
+                new HashMap<>() {{
+                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
+                    put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName());
+                    put(LocalParallelStreamRuntime.Config.Keys.BATCH_SIZE, 1);
+                    put(EMITTER, Generator.class.getName());
+                    put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
+                    put(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, SharedEmptyTinkerGraphTraversalProvider.class.getName());
+                    put(ConfigurationBase.Keys.OUTPUT, TinkerPopTraversalOutput.class.getName());
+                    put(Generator.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
+                    put(WORK_CHUNK_DRIVER_PHASE_ONE, RangedWorkChunkDriver.class.getName());
+                    put(OUTPUT_ID_DRIVER, RangedOutputIdDriver.class.getName());
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_BOTTOM, 0L);
+                    put(RangedWorkChunkDriver.Config.Keys.RANGE_TOP, scaleFactor);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_BOTTOM, scaleFactor * 10);
+                    put(RangedOutputIdDriver.Config.Keys.RANGE_TOP, Long.MAX_VALUE);
+                }});
+        System.out.println(ConfigUtil.configurationToPropertiesFormat(testConfig));
+
+        final Graph graph = SharedEmptyTinkerGraphGraphProvider.open().getProvided(GraphProvider.GraphProviderContext.OUTPUT);
+        graph.traversal().V().drop().iterate();
+
+        testTask(Generate.class, testConfig);
+        long countV = graph.traversal().V().count().next().longValue();
+        long countE = graph.traversal().E().count().next().longValue();
+        graph.close();
+
+        assertEquals(2L, countV);
+        assertEquals(1L, countE);
+
+    }
+
+    @Test
+    public void generateFromGremlinStatementsSynthetic() throws Exception {
+        Graph schemaGraph = InMemorySchemaGraphProvider.getGraphInstance();
+        ExampleSchemas.Synthetic.INSTANCE.addToGraph(schemaGraph);
         final Long scaleFactor = 1L;
 
         final Configuration testConfig = new MapConfiguration(

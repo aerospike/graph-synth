@@ -1,19 +1,24 @@
 package com.aerospike.synth.emitter.generator.schema;
 
 import com.aerospike.graph.synth.emitter.generator.ValueGenerator;
+import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
+import com.aerospike.graph.synth.util.tinkerpop.SchemaGraphUtil;
+import com.aerospike.movement.util.core.runtime.IOUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder.Keys.*;
 import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
@@ -21,12 +26,20 @@ import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
 public abstract class ExampleSchemas {
     public Graph addToGraph(Graph schemaGraph) {
         GraphTraversalSource sg = schemaGraph.traversal();
-        traversal(sg).iterate();
+        writeToTraversalSource(sg);
         return schemaGraph;
     }
 
+    public abstract GraphTraversalSource writeToTraversalSource(GraphTraversalSource sg);
+
     public void writeToGraphSon(Path graphsonPath) {
         addToGraph(TinkerGraph.open()).traversal().io(graphsonPath.toAbsolutePath().toString()).write().iterate();
+    }
+
+    public GraphSchema schema() {
+        Graph graph = TinkerGraph.open();
+        addToGraph(graph);
+        return TinkerPopSchemaTraversalParser.fromTraversal(graph.traversal());
     }
 
     public void writeToYAML(Path yamlPath) {
@@ -37,37 +50,75 @@ public abstract class ExampleSchemas {
         }
     }
 
-    abstract Long edgesForScaleFactor(Long scaleFactor);
+    public abstract Long edgesForScaleFactor(Long scaleFactor);
 
-    abstract Long verticesForScaleFactor(Long scaleFactor);
+    public abstract Long verticesForScaleFactor(Long scaleFactor);
 
-
-    abstract GraphTraversal<?, ?> traversal(GraphTraversalSource g);
 
     static String convertToString(GraphTraversal<?, ?> graphTraversal) {
         return GroovyTranslator.of("g").
                 translate(graphTraversal.asAdmin().getBytecode()).getScript();
     }
 
-    @Override
-    public String toString() {
-        return convertToString(traversal(TinkerGraph.open().traversal()));
+    public static final List<ExampleSchemas> samples = new ArrayList<>();
+
+    static {
+        samples.add(Synthetic.INSTANCE);
+        samples.add(Simplest.INSTANCE);
+        samples.add(Benchmark2024.INSTANCE);
     }
 
-    public static class SimplestTestSchema extends ExampleSchemas {
-        public static final ExampleSchemas INSTANCE = new SimplestTestSchema();
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
+    }
 
-        @Override
-        Long edgesForScaleFactor(Long scaleFactor) {
-            return 1 * scaleFactor;
+    public static class Synthetic extends ExampleSchemas {
+        public static final ExampleSchemas INSTANCE = new Synthetic();
+        private final GraphSchema schema;
+
+        public Synthetic() {
+            this.schema = YAMLSchemaParser.from(IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml").toPath()).parse();
         }
 
         @Override
-        Long verticesForScaleFactor(Long scaleFactor) {
+        public GraphTraversalSource writeToTraversalSource(GraphTraversalSource sg) {
+            SchemaGraphUtil.writeToTraversalSource(sg, schema);
+            return sg;
+        }
+
+        @Override
+        public Long edgesForScaleFactor(Long scaleFactor) {
+            return 15L;
+        }
+
+        @Override
+        public Long verticesForScaleFactor(Long scaleFactor) {
+            return 0L;
+        }
+
+    }
+
+    public static class Simplest extends ExampleSchemas {
+        public static final ExampleSchemas INSTANCE = new Simplest();
+
+
+        @Override
+        public GraphTraversalSource writeToTraversalSource(GraphTraversalSource sg) {
+            traversal(sg).iterate();
+            return sg;
+        }
+
+        @Override
+        public Long edgesForScaleFactor(Long scaleFactor) {
+            return scaleFactor;
+        }
+
+        @Override
+        public Long verticesForScaleFactor(Long scaleFactor) {
             return 2 * scaleFactor;
         }
 
-        @Override
         public GraphTraversal<?, ?> traversal(GraphTraversalSource g) {
             return g
                     .addV("A").as("A")
@@ -77,8 +128,9 @@ public abstract class ExampleSchemas {
         }
     }
 
-    public static class BenchmarkTestData extends ExampleSchemas {
-        public static final ExampleSchemas INSTANCE = new BenchmarkTestData();
+    public static class Benchmark2024 extends ExampleSchemas {
+        public static final ExampleSchemas INSTANCE = new Benchmark2024();
+
 
         public static class Keys {
             public static class PROPERTY {
@@ -107,17 +159,22 @@ public abstract class ExampleSchemas {
         }
 
         @Override
-        Long edgesForScaleFactor(Long scaleFactor) {
-            return 1 * scaleFactor;
+        public GraphTraversalSource writeToTraversalSource(GraphTraversalSource sg) {
+            traversal(sg).iterate();
+            return sg;
         }
 
         @Override
-        Long verticesForScaleFactor(Long scaleFactor) {
+        public Long edgesForScaleFactor(Long scaleFactor) {
+            return scaleFactor;
+        }
+
+        @Override
+        public Long verticesForScaleFactor(Long scaleFactor) {
             return 2 * scaleFactor;
         }
 
-        @Override
-        GraphTraversal<?, ?> traversal(GraphTraversalSource g) {
+        public GraphTraversal<?, ?> traversal(GraphTraversalSource g) {
             return g
                     .addV(Keys.V_LABEL.PARTNER_IDENTITY).as(Keys.V_LABEL.PARTNER_IDENTITY)
                     .property(ENTRYPOINT, true)

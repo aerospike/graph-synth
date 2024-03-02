@@ -102,14 +102,14 @@ public class TestGenerateTask extends AbstractMovementTest {
 
         //write that loaded schema into a graph instance
         SchemaGraphUtil.writeToTraversalSource(graph.traversal(), fromYaml);
-        graph.traversal().io("target/example_schema.json").write().iterate();
+        graph.traversal().io("target/gdemo_schema.json").write().iterate();
         graph.traversal().V().drop().iterate();
-        graph.traversal().io("target/example_schema.json").read().iterate();
+        graph.traversal().io("target/gdemo_schema.json").read().iterate();
         graph.close();
 
         final Map<String, String> testConfig = new HashMap<>() {{
             put(Generate.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
-            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPHSON_FILE, "target/example_schema.json");
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPHSON_FILE, "target/gdemo_schema.json");
             put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1));
             put(OUTPUT, MockOutput.class.getName());

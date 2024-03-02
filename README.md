@@ -81,7 +81,28 @@ Read more about Schema declerations in [the docs section](docs/Schema.md)
 
 Before building and running this project, you need to download and build [Movement](https://github.com/aerospike/movement)
 
-Maven is used as the build tool for this project, a simple [script](script/build.sh) is provided to build both projects.
+Maven is used as the build tool for this project.
+A simple [script](script/build.sh) is provided to build both projects.
+```shell
+$ script/build.sh
+
+...
+
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for GraphSynth 1.0.0-SNAPSHOT:
+[INFO] 
+[INFO] GraphSynth ......................................... SUCCESS [  0.392 s]
+[INFO] GraphSynth ......................................... SUCCESS [  5.627 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.228 s
+[INFO] Finished at: 2024-03-01T23:38:52-07:00
+[INFO] ------------------------------------------------------------------------
+
+$ ls graph-synth/target/GraphSynth-1.0.0-SNAPSHOT.jar
+graph-synth/target/GraphSynth-1.0.0-SNAPSHOT.jar
+```
 
 ## License
 

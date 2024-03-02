@@ -80,7 +80,7 @@ public class RemoteTraversalSource {
         final RemoteGraphTraversalProvider.URIConnectionInfo inputUriInfo;
         final GraphTraversalSource remoteSchema;
         if (RuntimeUtil.envOrProperty(REMOTE_TRAVERSAL_SCHEMA_SOURCE).isEmpty()) {
-            URI localhostURI = URI.create("ws://localhost:8182/schema");
+            URI localhostURI = URI.create("ws://localhost:8182/g");
 
             inputUriInfo = RemoteGraphTraversalProvider.URIConnectionInfo.from(localhostURI);
 
