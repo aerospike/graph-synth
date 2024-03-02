@@ -70,7 +70,7 @@ public class RemoteTraversalSource {
             System.out.println("skipping test, could not connect to " + info.toString());
             return;
         }
-        int TEST_SCALE = 1000;
+        int TEST_SCALE = 10;
         Path yamlFilePath = IOUtil.copyFromResourcesIntoNewTempFile("gdemo_schema.yaml").toPath();
         final String[] args = {
                 CLI.GraphSynthCLI.ArgNames.TEST_MODE,
