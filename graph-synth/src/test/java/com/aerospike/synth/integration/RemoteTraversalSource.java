@@ -2,13 +2,9 @@ package com.aerospike.synth.integration;
 
 import com.aerospike.graph.synth.cli.CLI;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
-import com.aerospike.movement.config.core.ConfigurationBase;
-import com.aerospike.movement.runtime.core.driver.impl.RangedOutputIdDriver;
-import com.aerospike.movement.runtime.core.driver.impl.RangedWorkChunkDriver;
-import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
-import com.aerospike.movement.test.mock.task.MockTask;
+import com.aerospike.graph.synth.util.tinkerpop.SchemaGraphUtil;
 import com.aerospike.movement.tinkerpop.common.RemoteGraphTraversalProvider;
 import com.aerospike.movement.util.core.runtime.IOUtil;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
@@ -26,8 +22,6 @@ import java.util.Optional;
 
 import static com.aerospike.movement.cli.CLI.setEquals;
 import static com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime.Config.Keys.BATCH_SIZE;
-import static com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime.Config.Keys.THREADS;
-import static com.aerospike.movement.util.core.runtime.RuntimeUtil.getAvailableProcessors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -120,10 +114,9 @@ public class RemoteTraversalSource {
         GraphSchema fromYamlSchema = YAMLSchemaParser.from(yamlFile.toPath()).parse();
         remote.V().drop().iterate();
 
-        TinkerPopSchemaParser.writeTraversalSource(remote, fromYamlSchema);
-        GraphSchema fromGraphSchema = TinkerPopSchemaParser.fromTraversal(remote);
+        TinkerPopSchemaTraversalParser.writeTraversalSource(remote, fromYamlSchema);
+        GraphSchema fromGraphSchema = TinkerPopSchemaTraversalParser.fromTraversal(remote);
         assertTrue(fromGraphSchema.equals(fromYamlSchema));
-
         int TEST_SCALE = 100;
         Path outputDir = IOUtil.createTempDir();
         final String[] args = {
@@ -146,7 +139,7 @@ public class RemoteTraversalSource {
                 throw new RuntimeException(e);
             }
         }).count();
-        assertEquals(3*TEST_SCALE, linesWritten - filesWritten);
+        assertEquals(73*TEST_SCALE, linesWritten - filesWritten);
         remote.V().drop().iterate();
 
     }

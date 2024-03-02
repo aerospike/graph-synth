@@ -36,7 +36,8 @@ public class GraphSchema {
                     .filter(it -> it.label().equals(v.label())).iterator();
             if (!i.hasNext())
                 return false;
-            if (!i.next().equals(v))
+            VertexSchema next = i.next();
+            if (!next.equals(v))
                 return false;
         }
         for (final RootVertexSpec rvs : rootVertexTypes) {

@@ -6,10 +6,9 @@
 
 package com.aerospike.synth.emitter.generator;
 
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
-import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.movement.test.core.AbstractMovementTest;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
 import com.aerospike.movement.tinkerpop.common.GraphProvider;
@@ -41,7 +40,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
 
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
-            put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
         }});
 
         //parse the yaml file to a GraphSchema
@@ -58,7 +57,7 @@ public class SchemaGraphTest extends AbstractMovementTest {
         final File schemaFile = IOUtil.copyFromResourcesIntoNewTempFile("example_schema.yaml");
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
-            put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
         }});
 
         //parse the yaml file to a GraphSchema
@@ -82,20 +81,22 @@ public class SchemaGraphTest extends AbstractMovementTest {
         graph.traversal().V().drop().iterate();
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
-            put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
         }});
 
         //parse the yaml file to a GraphSchema
         GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
 
         //write that loaded schema into a graph instance
-        SchemaGraphUtil.writeToGraph(graph, fromYaml);
+        SchemaGraphUtil.writeToTraversalSource(graph.traversal(), fromYaml);
 
         //parse the graph instance back into a GraphSchema
-        GraphSchema fromGraph = TinkerPopSchemaParser.open(config).parse();
+        GraphSchema fromGraph = TinkerPopSchemaTraversalParser.open(config).parse();
         graph.close();
         //compare the two GraphSchema instances, deep equality is implemented by each schema def class
         assertTrue(fromGraph.equals(fromYaml));
+        assertTrue(fromYaml.equals(fromGraph));
+
     }
 
     @Test
@@ -105,25 +106,25 @@ public class SchemaGraphTest extends AbstractMovementTest {
         graph.traversal().V().drop().iterate();
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
-            put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
         }});
 
         //parse the yaml file to a GraphSchema
         GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
 
         //write that loaded schema into a graph instance
-        SchemaGraphUtil.writeToGraph(graph, fromYaml);
+        SchemaGraphUtil.writeToTraversalSource(graph.traversal(), fromYaml);
         graph.traversal().io("target/example_schema.json").write().iterate();
         graph.traversal().V().drop().iterate();
         graph.traversal().io("target/example_schema.json").read().iterate();
         graph.close();
         final Configuration GraphSONConfig = new MapConfiguration(new HashMap<>() {{
-            put(TinkerPopSchemaParser.Config.Keys.GRAPHSON_FILE, "target/example_schema.json");
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPHSON_FILE, "target/example_schema.json");
         }});
 
 
         //parse the graph instance back into a GraphSchema
-        GraphSchema fromGraph = TinkerPopSchemaParser.open(GraphSONConfig).parse();
+        GraphSchema fromGraph = TinkerPopSchemaTraversalParser.open(GraphSONConfig).parse();
 
         //compare the two GraphSchema instances, deep equality is implemented by each schema def class
         assertTrue(fromGraph.equals(fromYaml));

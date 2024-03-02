@@ -218,7 +218,7 @@ public class TinkerPopSchemaGraphParser implements GraphSchemaParser {
 
     public static void writeGraphSON(final GraphSchema schema, final Path output) {
         final Graph graph = TinkerGraph.open();
-        SchemaGraphUtil.writeToGraph(graph, schema);
+        SchemaGraphUtil.writeToTraversalSource(graph.traversal(), schema);
         graph.traversal().io(output.toAbsolutePath().toString()).write().iterate();
     }
 

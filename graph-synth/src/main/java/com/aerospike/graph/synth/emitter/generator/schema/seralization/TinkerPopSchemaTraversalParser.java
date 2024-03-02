@@ -18,8 +18,6 @@ import com.aerospike.graph.synth.util.tinkerpop.SchemaGraphUtil;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.*;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.nio.file.Path;
@@ -36,7 +34,7 @@ import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
  * </a>
  */
 
-public class TinkerPopSchemaParser implements GraphSchemaParser {
+public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
 
 
     public static class Config extends ConfigurationBase {
@@ -68,7 +66,7 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
 
     private final GraphTraversalSource schemaG;
 
-    private TinkerPopSchemaParser(final GraphTraversalSource schemaGraphSource) {
+    private TinkerPopSchemaTraversalParser(final GraphTraversalSource schemaGraphSource) {
         this.schemaG = schemaGraphSource;
     }
 
@@ -91,15 +89,15 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
         return g;
     }
 
-    public static TinkerPopSchemaParser open(final Configuration config) {
-        return new TinkerPopSchemaParser(openSchemaGraph(config));
+    public static TinkerPopSchemaTraversalParser open(final Configuration config) {
+        return new TinkerPopSchemaTraversalParser(openSchemaGraph(config));
     }
 
 
     private VertexSchema fromTinkerPop(final Vertex tp3SchemaVertex) {
         final VertexSchema vertexSchema = new VertexSchema();
         final List<PropertySchema> propertySchemas = new ArrayList<>();
-        tp3SchemaVertex.properties().forEachRemaining(tp3VertexProperty -> {
+        schemaG.V(tp3SchemaVertex).properties().forEachRemaining(tp3VertexProperty -> {
             if (isMetadata(tp3VertexProperty.key())) {
                 return;
             }
@@ -125,7 +123,7 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
         });
         vertexSchema.properties = propertySchemas;
         final List<OutEdgeSpec> outEdgeSpecs = new ArrayList<>();
-        tp3SchemaVertex.edges(Direction.OUT).forEachRemaining(edge -> {
+        schemaG.V(tp3SchemaVertex).outE().forEachRemaining(edge -> {
             final OutEdgeSpec outEdgeSpec = new OutEdgeSpec();
             outEdgeSpec.name = edge.id().toString();
             outEdgeSpec.likelihood = edge.properties(SchemaBuilder.Keys.LIKELIHOOD).hasNext() ?
@@ -229,7 +227,7 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
 
     public static void writeGraphSON(final GraphSchema schema, final Path output) {
         final Graph graph = TinkerGraph.open();
-        SchemaGraphUtil.writeToGraph(graph, schema);
+        SchemaGraphUtil.writeToTraversalSource(graph.traversal(), schema);
         graph.traversal().io(output.toAbsolutePath().toString()).write().iterate();
     }
 
@@ -248,10 +246,10 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
     }
 
     public static GraphSchema fromGraph(final Graph graph) {
-        return new TinkerPopSchemaParser(graph.traversal()).parse();
+        return new TinkerPopSchemaTraversalParser(graph.traversal()).parse();
     }
     public static GraphSchema fromTraversal(final GraphTraversalSource g) {
-        return new TinkerPopSchemaParser(g).parse();
+        return new TinkerPopSchemaTraversalParser(g).parse();
     }
 
 

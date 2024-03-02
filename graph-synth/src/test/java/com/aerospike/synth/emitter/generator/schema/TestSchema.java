@@ -1,7 +1,7 @@
 package com.aerospike.synth.emitter.generator.schema;
 
 import com.aerospike.graph.synth.emitter.generator.ValueGenerator;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -32,7 +32,7 @@ public abstract class TestSchema {
 
     public void writeToYAML(Path yamlPath) {
         try {
-            Files.write(yamlPath, YAMLSchemaParser.dumpSchema(TinkerPopSchemaParser.fromGraph(addToGraph(TinkerGraph.open()))).getBytes());
+            Files.write(yamlPath, YAMLSchemaParser.dumpSchema(TinkerPopSchemaTraversalParser.fromGraph(addToGraph(TinkerGraph.open()))).getBytes());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

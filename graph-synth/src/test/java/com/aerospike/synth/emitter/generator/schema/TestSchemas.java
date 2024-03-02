@@ -1,27 +1,22 @@
 package com.aerospike.synth.emitter.generator.schema;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.graph.synth.util.tinkerpop.InMemorySchemaGraphProvider;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.movement.encoding.tinkerpop.TinkerPopTraversalEncoder;
 import com.aerospike.movement.output.tinkerpop.TinkerPopTraversalOutput;
-import com.aerospike.movement.runtime.core.Runtime;
 
 import com.aerospike.movement.runtime.core.driver.impl.RangedOutputIdDriver;
 import com.aerospike.movement.runtime.core.driver.impl.RangedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
-import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProvider;
 import com.aerospike.movement.tinkerpop.common.GraphProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
-import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
-import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.After;
 import org.junit.Before;
@@ -66,8 +61,8 @@ public class TestSchemas {
 
         final Configuration testConfig = new MapConfiguration(
                 new HashMap<>() {{
-                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaParser.class.getName());
-                    put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName());
+                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
+                    put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName());
                     put(LocalParallelStreamRuntime.Config.Keys.BATCH_SIZE, 1);
                     put(EMITTER, Generator.class.getName());
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());

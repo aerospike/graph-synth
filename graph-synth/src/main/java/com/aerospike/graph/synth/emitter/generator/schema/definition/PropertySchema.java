@@ -11,7 +11,7 @@ package com.aerospike.graph.synth.emitter.generator.schema.definition;
  */
 public class PropertySchema {
     public String name;
-    public String type;
+    public String type = "String";
     public double likelihood;
     public GeneratorConfig valueGenerator;
 

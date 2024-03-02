@@ -1,7 +1,7 @@
 package com.aerospike.graph.synth.cli;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.movement.output.files.DirectoryOutput;
@@ -22,8 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.aerospike.graph.synth.emitter.generator.Generator.Config.Keys.SCALE_FACTOR;
 
 public class CLI {
     public static void main(String[] args) throws Exception {
@@ -57,8 +55,8 @@ public class CLI {
                 config.setProperty(GraphSynthCLI.Argument.OUTPUT_URI_LONG.getConfigKey(), scalePath.toUri().toString());
             }
             if(!cli.inputUri().get().getScheme().equals("file")){
-                config.setProperty(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaParser.class.getName());
-                config.setProperty(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, RemoteGraphTraversalProvider.class.getName());
+                config.setProperty(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
+                config.setProperty(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, RemoteGraphTraversalProvider.class.getName());
                 config.setProperty(RemoteGraphTraversalProvider.Config.Keys.INPUT_URI,cli.inputUri().get().toString());
             }
 

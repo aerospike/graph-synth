@@ -9,22 +9,18 @@ package com.aerospike.synth.process.tasks.generator;
 import com.aerospike.graph.synth.emitter.generator.Generator;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaGraphParser;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.graph.synth.util.tinkerpop.SchemaGraphUtil;
 import com.aerospike.movement.process.core.Task;
-import com.aerospike.movement.runtime.core.Runtime;
-import com.aerospike.movement.runtime.core.driver.impl.RangedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
-import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.movement.test.core.AbstractMovementTest;
 import com.aerospike.movement.test.mock.MockUtil;
 import com.aerospike.movement.test.mock.encoder.MockEncoder;
 import com.aerospike.movement.test.mock.output.MockOutput;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
 import com.aerospike.movement.tinkerpop.common.GraphProvider;
-import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.IOUtil;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
 import org.apache.commons.configuration2.Configuration;
@@ -99,14 +95,14 @@ public class TestGenerateTask extends AbstractMovementTest {
         graph.traversal().V().drop().iterate();
         final Configuration config = new MapConfiguration(new HashMap<>() {{
             put(YAMLSchemaParser.Config.Keys.YAML_FILE_PATH, schemaFile.getAbsolutePath());
-            put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName());
         }});
 
         //parse the yaml file to a GraphSchema
         GraphSchema fromYaml = YAMLSchemaParser.open(config).parse();
 
         //write that loaded schema into a graph instance
-        SchemaGraphUtil.writeToGraph(graph, fromYaml);
+        SchemaGraphUtil.writeToTraversalSource(graph.traversal(), fromYaml);
         graph.traversal().io("target/example_schema.json").write().iterate();
         graph.traversal().V().drop().iterate();
         graph.traversal().io("target/example_schema.json").read().iterate();
@@ -114,8 +110,8 @@ public class TestGenerateTask extends AbstractMovementTest {
 
         final Map<String, String> testConfig = new HashMap<>() {{
             put(Generate.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
-            put(TinkerPopSchemaParser.Config.Keys.GRAPHSON_FILE, "target/example_schema.json");
-            put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaGraphParser.class.getName());
+            put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPHSON_FILE, "target/example_schema.json");
+            put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1));
             put(OUTPUT, MockOutput.class.getName());
             put(ENCODER, MockEncoder.class.getName());

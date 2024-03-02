@@ -7,34 +7,26 @@
 package com.aerospike.synth.emitter.generator;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
-import com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.graph.synth.util.tinkerpop.InMemorySchemaGraphProvider;
 import com.aerospike.movement.config.core.ConfigurationBase;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
 import com.aerospike.movement.encoding.tinkerpop.TinkerPopTraversalEncoder;
 import com.aerospike.movement.output.tinkerpop.TinkerPopTraversalOutput;
-import com.aerospike.movement.runtime.core.Runtime;
 import com.aerospike.movement.runtime.core.driver.impl.RangedOutputIdDriver;
 import com.aerospike.movement.runtime.core.driver.impl.RangedWorkChunkDriver;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
-import com.aerospike.movement.runtime.core.local.RunningPhase;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProvider;;
 import com.aerospike.movement.tinkerpop.common.GraphProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
-import com.aerospike.movement.util.core.iterator.ConfiguredRangeSupplier;
-import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
 import com.aerospike.movement.util.core.runtime.IOUtil;
 import com.aerospike.synth.emitter.generator.schema.TestSchema;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,8 +34,6 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 import static com.aerospike.movement.config.core.ConfigurationBase.Keys.*;
 import static com.aerospike.movement.test.core.AbstractMovementTest.testTask;
@@ -73,8 +63,8 @@ public class SchemaGraphIntegration {
 
         final Configuration testConfig = new MapConfiguration(
                 new HashMap<>() {{
-                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaParser.class.getName());
-                    put(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName());
+                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
+                    put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName());
                     put(LocalParallelStreamRuntime.Config.Keys.BATCH_SIZE, 1);
                     put(EMITTER, Generator.class.getName());
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
@@ -109,12 +99,12 @@ public class SchemaGraphIntegration {
         final File yamlFile = IOUtil.copyFromResourcesIntoNewTempFile("simplest_schema.yaml");
         GraphSchema schema = YAMLSchemaParser.from(yamlFile.toPath()).parse();
         Path graphsonSchema = Path.of("target/simplest_schema.json");
-        TinkerPopSchemaParser.writeGraphSON(schema, graphsonSchema);
+        TinkerPopSchemaTraversalParser.writeGraphSON(schema, graphsonSchema);
 
         final Configuration testConfig = new MapConfiguration(
                 new HashMap<>() {{
-                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaParser.class.getName());
-                    put(TinkerPopSchemaParser.Config.Keys.GRAPHSON_FILE, graphsonSchema.toAbsolutePath().toString());
+                    put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName());
+                    put(TinkerPopSchemaTraversalParser.Config.Keys.GRAPHSON_FILE, graphsonSchema.toAbsolutePath().toString());
                     put(LocalParallelStreamRuntime.Config.Keys.BATCH_SIZE, 1);
                     put(EMITTER, Generator.class.getName());
                     put(ConfigurationBase.Keys.ENCODER, TinkerPopTraversalEncoder.class.getName());
@@ -178,7 +168,7 @@ public class SchemaGraphIntegration {
         assertEquals(2L, countV);
         assertEquals(1L, countE);
         GraphSchema schema = YAMLSchemaParser.from(schemaFile.toPath()).parse();
-        TinkerPopSchemaParser.writeGraphSON(schema, Path.of("target/simplest_schema.json"));
+        TinkerPopSchemaTraversalParser.writeGraphSON(schema, Path.of("target/simplest_schema.json"));
     }
 
 }

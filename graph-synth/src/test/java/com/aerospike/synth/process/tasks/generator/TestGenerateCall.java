@@ -1,21 +1,17 @@
 package com.aerospike.synth.process.tasks.generator;
 
-import com.aerospike.graph.synth.emitter.generator.Generator;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.graph.synth.util.tinkerpop.InMemorySchemaGraphProvider;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.movement.encoding.tinkerpop.TinkerPopGraphEncoder;
-import com.aerospike.movement.encoding.tinkerpop.TinkerPopTraversalEncoder;
 import com.aerospike.movement.output.tinkerpop.TinkerPopGraphOutput;
-import com.aerospike.movement.output.tinkerpop.TinkerPopTraversalOutput;
 import com.aerospike.movement.plugin.PluginInterface;
 import com.aerospike.movement.plugin.tinkerpop.CallStepPlugin;
 import com.aerospike.movement.plugin.tinkerpop.PluginServiceFactory;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.test.mock.MockUtil;
 import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphGraphProvider;
-import com.aerospike.movement.test.tinkerpop.SharedEmptyTinkerGraphTraversalProvider;
 import com.aerospike.movement.test.tinkerpop.SharedTinkerClassicGraphProvider;
 import com.aerospike.movement.tinkerpop.common.GraphProvider;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
@@ -28,8 +24,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -76,8 +70,8 @@ public class TestGenerateCall {
         long start = System.nanoTime();
         Map<String, Object> x = (Map<String, Object>) controlGraph.traversal()
                 .call(Generate.class.getSimpleName())
-                .with(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName())
-                .with(SCHEMA_PARSER, TinkerPopSchemaParser.class.getName())
+                .with(TinkerPopSchemaTraversalParser.Config.Keys.GRAPH_PROVIDER, InMemorySchemaGraphProvider.class.getName())
+                .with(SCHEMA_PARSER, TinkerPopSchemaTraversalParser.class.getName())
                 .with(TinkerPopGraphEncoder.Config.Keys.GRAPH_PROVIDER, SharedEmptyTinkerGraphGraphProvider.class.getName())
                 .with(ConfigurationBase.Keys.OUTPUT, TinkerPopGraphOutput.class.getName())
                 .with(ConfigurationBase.Keys.ENCODER, TinkerPopGraphEncoder.class.getName())
