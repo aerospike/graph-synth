@@ -38,6 +38,9 @@ public class CLI {
             return new RuntimeException("no scale factors provided");
         });
         Map<String, String> scaleResults = new HashMap<>();
+        if (!cli.outputUri().get().getScheme().equals("file") && scales.size() > 1) {
+            throw new RuntimeException("multiple scale factors only supported for file:// output");
+        }
         scales.forEach(scaleFactor -> {
             try {
                 RuntimeUtil.unload(Generate.class);
@@ -45,10 +48,13 @@ public class CLI {
                 System.out.println(e);
             }
             cli.scaleFactor = String.valueOf(scaleFactor);
-            Path scalePath = Path.of(cli.outputUri().get()).resolve(String.valueOf(scaleFactor));
             Configuration config = GraphSynthCLI.toConfig(cli);
             config.setProperty(GraphSynthCLI.Argument.SCALE_FACTOR.getConfigKey(), scaleFactor);
-            config.setProperty(GraphSynthCLI.Argument.OUTPUT_URI_LONG.getConfigKey(), scalePath.toUri().toString());
+            if (cli.outputUri().get().getScheme().equals("file")) {
+                Path scalePath = Path.of(cli.outputUri().get()).resolve(String.valueOf(scaleFactor));
+                config.setProperty(GraphSynthCLI.Argument.OUTPUT_URI_LONG.getConfigKey(), scalePath.toUri().toString());
+            }
+
             Optional<GraphSynthCLIPlugin> plugin = loadPlugin(config);
             System.out.println("will generate scale factor: " + scaleFactor);
             final UUID taskId = (UUID) plugin.orElseThrow(() -> new RuntimeException("Could not load CLI")).call().next();
@@ -72,13 +78,16 @@ public class CLI {
             RuntimeUtil.waitTask(taskId);
             runtime.close();
             long fileCount = 0;
-            try {
-                fileCount = Files.walk(scalePath).filter(it -> it.toFile().isFile()).count();
-                System.out.printf("file count for %s: %d\n", scalePath.toString(), fileCount);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if (cli.outputUri().get().getScheme().equals("file")) {
+                try {
+                    Path scalePath = Path.of(cli.outputUri().get()).resolve(String.valueOf(scaleFactor));
+                    fileCount = Files.walk(scalePath).filter(it -> it.toFile().isFile()).count();
+                    System.out.printf("file count for %s: %d\n", scalePath.toString(), fileCount);
+                    scaleResults.put("Files generated at Scale Factor: " + scaleFactor, String.valueOf(fileCount));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            scaleResults.put("Files generated at Scale Factor: " + scaleFactor, String.valueOf(fileCount));
             System.out.println("done scaleFactor " + scaleFactor);
         });
         scaleResults.forEach((k, v) -> System.out.println(String.join(" ", k, v)));
@@ -181,11 +190,15 @@ public class CLI {
             final Map<String, String> results = new HashMap<>();
             cli.overrides().ifPresent(results::putAll);
             cli.scaleFactor().ifPresent(it -> results.put(Generator.Config.Keys.SCALE_FACTOR, Optional.ofNullable(config.getString(Argument.SCALE_FACTOR.getConfigKey())).orElseThrow(() -> new RuntimeException("no scale factor configured"))));
-            cli.outputUri().ifPresent(it -> results.put(DirectoryOutput.Config.Keys.OUTPUT_DIRECTORY, Path.of(URI.create(it.toString())).toAbsolutePath().toString()));
-            cli.inputUri().ifPresent(it -> results.put(YAMLSchemaParser.Config.Keys.YAML_FILE_URI, it.toString()));
             cli.testMode().ifPresent(it -> results.put(Argument.TEST_MODE.getConfigKey(), it.toString()));
             cli.debug().ifPresent(it -> results.put(Argument.DEBUG_LONG.getConfigKey(), it.toString()));
             cli.help().ifPresent(it -> results.put(Argument.HELP_LONG.getConfigKey(), it.toString()));
+            if (cli.outputUri().get().getScheme().equals("file")) {
+                cli.outputUri().ifPresent(it -> results.put(DirectoryOutput.Config.Keys.OUTPUT_DIRECTORY, Path.of(URI.create(it.toString())).toAbsolutePath().toString()));
+            }
+            if (cli.inputUri().get().getScheme().equals("file")) {
+                cli.inputUri().ifPresent(it -> results.put(YAMLSchemaParser.Config.Keys.YAML_FILE_URI, it.toString()));
+            }
             return new MapConfiguration(results);
         }
 
