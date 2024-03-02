@@ -8,6 +8,7 @@ package com.aerospike.synth.process.tasks.generator;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaGraphParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
@@ -114,7 +115,7 @@ public class TestGenerateTask extends AbstractMovementTest {
         final Map<String, String> testConfig = new HashMap<>() {{
             put(Generate.Config.Keys.SCALE_FACTOR, String.valueOf(scaleFactor));
             put(TinkerPopSchemaParser.Config.Keys.GRAPHSON_FILE, "target/example_schema.json");
-            put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaParser.class.getName());
+            put(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaGraphParser.class.getName());
             put(LocalParallelStreamRuntime.Config.Keys.THREADS, String.valueOf(1));
             put(OUTPUT, MockOutput.class.getName());
             put(ENCODER, MockEncoder.class.getName());
