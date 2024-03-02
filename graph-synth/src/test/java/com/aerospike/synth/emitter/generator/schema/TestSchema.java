@@ -71,13 +71,10 @@ public abstract class TestSchema {
         @Override
         public GraphTraversal<?, ?> traversal(GraphTraversalSource g) {
             return g
-                    .addV(VERTEX_TYPE).as("A")
-                    .property(T.id, "A")
+                    .addV("A").as("A")
                     .property("entrypoint", true)
-                    .addV("vertexType").as("B")
-                    .property(T.id, "B")
-                    .addE("edgeType").from("A").to("B")
-                    .property(T.id, "AtoB");
+                    .addV("B").as("B")
+                    .addE("AtoB").from("A").to("B");
         }
     }
 
@@ -123,7 +120,7 @@ public abstract class TestSchema {
         @Override
         GraphTraversal<?, ?> traversal(GraphTraversalSource g) {
             return g
-                    .addV(VERTEX_TYPE).as(Keys.V_LABEL.PARTNER_IDENTITY).property(T.id, Keys.V_LABEL.PARTNER_IDENTITY)
+                    .addV(Keys.V_LABEL.PARTNER_IDENTITY).as(Keys.V_LABEL.PARTNER_IDENTITY)
                     .property(ENTRYPOINT, true)
                     .property(subKey(ENTRYPOINT, CHANCES_TO_CREATE), 1)
                     .property(subKey(ENTRYPOINT, LIKELIHOOD), 1.0)
@@ -131,7 +128,7 @@ public abstract class TestSchema {
                     .property("partner_id.value.generator.args", MapUtil.of("digits", 12))
 
 
-                    .addV(VERTEX_TYPE).as(Keys.V_LABEL.ACCOUNT).property(T.id, Keys.V_LABEL.ACCOUNT)
+                    .addV(Keys.V_LABEL.ACCOUNT).as(Keys.V_LABEL.ACCOUNT)
                     .property("partner_id.value.generator.impl", ValueGenerator.RandomDigitSequence.class.getName())
                     .property("partner_id.value.generator.args", MapUtil.of("digits", 8))
 

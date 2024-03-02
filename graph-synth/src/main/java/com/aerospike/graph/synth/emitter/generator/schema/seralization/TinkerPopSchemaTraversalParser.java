@@ -125,7 +125,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
         final List<OutEdgeSpec> outEdgeSpecs = new ArrayList<>();
         schemaG.V(tp3SchemaVertex).outE().forEachRemaining(edge -> {
             final OutEdgeSpec outEdgeSpec = new OutEdgeSpec();
-            outEdgeSpec.name = edge.id().toString();
+            outEdgeSpec.name = edge.label();
             outEdgeSpec.likelihood = edge.properties(SchemaBuilder.Keys.LIKELIHOOD).hasNext() ?
                     (double) edge.properties(SchemaBuilder.Keys.LIKELIHOOD).next().value() : 1.0;
             outEdgeSpec.chancesToCreate = edge.properties(SchemaBuilder.Keys.CHANCES_TO_CREATE).hasNext() ?
@@ -133,7 +133,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
             outEdgeSpecs.add(outEdgeSpec);
         });
         vertexSchema.outEdges = outEdgeSpecs;
-        vertexSchema.name = tp3SchemaVertex.id().toString();
+        vertexSchema.name = tp3SchemaVertex.label();
         return vertexSchema;
     }
 
@@ -151,9 +151,9 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
 
     private EdgeSchema fromTinkerPop(final Edge tp3SchemaEdge) {
         final EdgeSchema edgeSchema = new EdgeSchema();
-        edgeSchema.name = tp3SchemaEdge.id().toString();
-        edgeSchema.inVertex = tp3SchemaEdge.inVertex().id().toString();
-        edgeSchema.outVertex = tp3SchemaEdge.outVertex().id().toString();
+        edgeSchema.name = tp3SchemaEdge.label();
+        edgeSchema.inVertex = tp3SchemaEdge.inVertex().label();
+        edgeSchema.outVertex = tp3SchemaEdge.outVertex().label();
         final List<PropertySchema> propertySchemas = new ArrayList<>();
         tp3SchemaEdge.properties().forEachRemaining(tp3EdgeProperty -> {
             if (isMetadata(tp3EdgeProperty.key())) {
@@ -220,7 +220,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
         final RootVertexSpec rootVertexSpec = new RootVertexSpec();
         rootVertexSpec.chancesToCreate = (Integer) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE).orElse(1);
         rootVertexSpec.likelihood = (Double) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD).orElse(1.0);
-        rootVertexSpec.name = (String) entrypointVertex.id();
+        rootVertexSpec.name = (String) entrypointVertex.label();
         return rootVertexSpec;
     }
 

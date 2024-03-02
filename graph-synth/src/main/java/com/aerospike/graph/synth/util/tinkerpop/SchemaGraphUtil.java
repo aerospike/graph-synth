@@ -32,7 +32,7 @@ public class SchemaGraphUtil {
         final Map<String, RootVertexSpec> rootVertexSpecMap = new HashMap<>();
         graphSchema.rootVertexTypes.stream().forEach(it -> rootVertexSpecMap.put(it.name, it));
         graphSchema.vertexTypes.forEach(vertexSchema -> {
-            final Vertex v = g.addV(SchemaBuilder.Keys.VERTEX_TYPE).property(T.id, vertexSchema.label()).next();
+            final Vertex v = g.addV(vertexSchema.label()).next();
             if (graphSchema.rootVertexTypes.stream().anyMatch(it -> it.name.equals(vertexSchema.label()))) {
                 g.V(v).property(SchemaBuilder.Keys.ENTRYPOINT, true).next();
                 g.V(v).property(subKey(SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE), rootVertexSpecMap.get(vertexSchema.name).chancesToCreate).next();
@@ -46,9 +46,9 @@ public class SchemaGraphUtil {
             });
         });
         graphSchema.edgeTypes.forEach(edgeSchema -> {
-            final Vertex inV = g.V(edgeSchema.inVertex).next();
-            final Vertex outV = g.V(edgeSchema.outVertex).next();
-            final Edge schemaEdge = g.V(outV).addE(SchemaBuilder.Keys.EDGE_TYPE).to(__.V(inV)).property(T.id, edgeSchema.label()).next();
+            final Vertex inV = g.V().hasLabel(edgeSchema.inVertex).next();
+            final Vertex outV = g.V().hasLabel(edgeSchema.outVertex).next();
+            final Edge schemaEdge = g.V(outV).addE(edgeSchema.label()).to(__.V(inV)).next();
             g.E(schemaEdge).property(SchemaBuilder.Keys.CHANCES_TO_CREATE,
                     SchemaUtil.getSchemaFromVertexName(graphSchema, edgeSchema.outVertex)
                             .outEdges
