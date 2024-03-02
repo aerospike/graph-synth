@@ -12,25 +12,39 @@ To get started, download the latest jar release  [here](https://github.com/aeros
 ```shell
 $ java -jar GraphSynth-1.0.0.jar --help
 Graph Synth, by Aerospike.
-Usage: GraphSynth [--debug] [--help] [--input-uri=<inputUri>]
-                  [--output-uri=<outputUri>] [--scale-factor=<scaleFactor>]
-                  [--set=<String=String>]...
-      --debug   Show Debug Output
-      --help    Help
-      --input-uri=<inputUri>
-                File or Gremlin Server URI for schema, supported schemes:
-                 file://
-                 ws://
-                 wss://
-      --output-uri=<outputUri>
-                File or Gremlin Server URI for output, supported schemes:
-                 file://
-                 ws://
-                 wss://
+Usage: GraphSynth [--help] [--scale-factor=<scaleFactor>]
+                  [--input-uri=<inputUri>] [--output-uri=<outputUri>]
+                  [--list-sample-schemas] [--load-sample=<loadSample>]
+                  [--dump-sample=<dumpSample>] [--export-schema]
+                  [--load-schema] [--clear] [--set=<String=String>]... [--debug]
+      --help            Help
       --scale-factor=<scaleFactor>
-                Comma delimited list of scale factors
+                        Comma delimited list of scale factors
+      --input-uri=<inputUri>
+                        File or Gremlin Server URI for schema, supported
+                          schemes:
+                         file://
+                         ws://
+                         wss://
+      --output-uri=<outputUri>
+                        File or Gremlin Server URI for output, supported
+                          schemes:
+                         file://
+                         ws://
+                         wss://
+      --list-sample-schemas
+                        List Sample Schemas
+      --load-sample=<loadSample>
+                        Load Sample to Gremlin Server
+      --dump-sample=<dumpSample>
+                        Dump Sample Schema to YAML
+      --export-schema   Export Schema from Gremlin Server to YAML file
+      --load-schema     Load YAML Schema to Gremlin Server
+      --clear           Delete and overwrite existing remote graph
       --set=<String=String>
-                Set or override configuration key
+                        Set or override configuration key
+      --debug           Show Debug Output
+
 ```
 
 Some real world examples:
@@ -38,29 +52,56 @@ Some real world examples:
 Using a yaml schema file to write out csv data:
 ```shell
 $ java -jar GraphSynth-1.0.0.jar \
-  --input-uri=file:/home/user/software/graph-synth/conf/schema/gdemo_schema.yaml \
+  --input-uri=file:$(pwd)/conf/schema/gdemo_schema.yaml \
   --output-uri=file:/tmp/output-data \
-    --scale-factor=10
+  --scale-factor=10
 ```
 
-Using a schema graph to write out csv data at 3 different scales:
+You can list some built-in sample schemas with the --list-sample-schemas command:
+```shell
+$ java -jar GraphSynth-1.0.0-SNAPSHOT.jar --list-sample-schemas
+Synthetic
+Simplest
+Benchmark2024
+GDemoSchema
+```
+
+If you have a Gremlin Server handy, you can load a schema into it. This may be useful for exploring and modifying the schema.
+Be careful, note the --clear option will erase your existing graph. 
+
+```shell
+$ java -jar graph-synth/target/GraphSynth-1.0.0-SNAPSHOT.jar --load-sample GDemoSchema --output-uri=ws://localhost:8182/g --clear
+$ 
+```
+Once you have it loaded, you can use that remote schema to generate data. 
+
+Here is an example of using a remote schema graph to write out csv data at 3 different scales:
 ```shell
 $ java -jar GraphSynth-1.0.0.jar \
-  --input-uri=ws://my-gremlin-schema-server:8182/g \
+  --input-uri=ws://localhost:8182/g \
   --output-uri=file:/tmp/output-data \
   --scale-factor=10,100,1000
+...
+
+Files generated at Scale Factor: 10 26
+Files generated at Scale Factor: 1000 260
+Files generated at Scale Factor: 100 26
+$
 ```
 
-Using a schema graph to write out csv data:
+You can also generate directly into a remote gremlin server.
+
+Either from YAML:
 ```shell
 $ java -jar GraphSynth-1.0.0.jar \
-  --input-uri=ws://my-gremlin-schema-server:8182/g \
-  --output-uri=file:/tmp/output-data \
-  --scale-factor=66,100000
+   --input-uri=file:$(pwd)/conf/schema/gdemo_schema.yaml \
+   --output-uri=ws://localhost:8182/g  \
+   --scale-factor=1000 \
+   --clear
 ```
 
-Using a schema graph to write data directly do a different graph, both graphs are served as different traversal endpoints:  
-note that only 1 scale factor is supported when writing directly to a graph
+Or directly from a schema graph into another graph:
+
 ```shell
 $ java -jar GraphSynth-1.0.0.jar \
   --input-uri=ws://my-gremlin-schema-server:8182/schema \

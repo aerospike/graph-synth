@@ -157,7 +157,7 @@ public class CLI {
         return Optional.of((GraphSynthCLIPlugin) GraphSynthCLIPlugin.open(config));
     }
 
-    @CommandLine.Command(name = "GraphSynth", header = "Graph Synth, by Aerospike.")
+    @CommandLine.Command(name = "GraphSynth", header = "Graph Synth, by Aerospike.", sortSynopsis = false, sortOptions = false)
     public static class GraphSynthCLI {
 
         public static class ArgNames {
@@ -255,96 +255,97 @@ public class CLI {
         }
 
 
-        @CommandLine.Option(names = {ArgNames.OUTPUT_URI_LONG}, description = "File or Gremlin Server URI for output, supported schemes:\n file:// \n ws:// \n wss://")
-        protected String outputUri;
-
-        public Optional<URI> outputUri() {
-            return Optional.ofNullable(outputUri).map(URI::create);
-        }
-
-        @CommandLine.Option(names = {ArgNames.INPUT_URI_LONG}, description = "File or Gremlin Server URI for schema, supported schemes:\n file:// \n ws:// \n wss:// ")
-        protected String inputUri;
-
-        public Optional<URI> inputUri() {
-            return Optional.ofNullable(inputUri).map(URI::create);
-        }
-
-        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "Comma delimited list of scale factors")
-        protected String scaleFactor;
-
-        public Optional<List<Long>> scaleFactor() {
-            return Optional.ofNullable(scaleFactor).map(scalesString -> Arrays.stream(scalesString.split(",")).map(Long::valueOf).collect(Collectors.toList()));
-        }
-
-        @CommandLine.Option(names = {ArgNames.HELP_LONG}, description = "Help")
+        @CommandLine.Option(names = {ArgNames.HELP_LONG}, description = "Help", order = 0)
         protected Boolean help;
 
         private Optional<Boolean> help() {
             return Optional.ofNullable(help);
         }
 
-        @CommandLine.Option(names = {ArgNames.SET_LONG}, description = "Set or override configuration key")
-        protected Map<String, String> overrides;
 
-        public Optional<Map<String, String>> overrides() {
-            return Optional.ofNullable(overrides);
+        @CommandLine.Option(names = {ArgNames.SCALE_FACTOR}, description = "Comma delimited list of scale factors", order = 1)
+        protected String scaleFactor;
+        public Optional<List<Long>> scaleFactor() {
+            return Optional.ofNullable(scaleFactor).map(scalesString -> Arrays.stream(scalesString.split(",")).map(Long::valueOf).collect(Collectors.toList()));
         }
 
-        @CommandLine.Option(names = {ArgNames.TEST_MODE}, description = "Test Mode", hidden = true)
-        protected Boolean testMode = false;
+        @CommandLine.Option(names = {ArgNames.INPUT_URI_LONG}, description = "File or Gremlin Server URI for schema, supported schemes:\n file:// \n ws:// \n wss:// ", order = 2)
+        protected String inputUri;
 
-        private Optional<Boolean> testMode() {
-            return Optional.ofNullable(testMode);
+        public Optional<URI> inputUri() {
+            return Optional.ofNullable(inputUri).map(URI::create);
+        }
+        @CommandLine.Option(names = {ArgNames.OUTPUT_URI_LONG}, description = "File or Gremlin Server URI for output, supported schemes:\n file:// \n ws:// \n wss://", order = 3)
+        protected String outputUri;
+        public Optional<URI> outputUri() {
+            return Optional.ofNullable(outputUri).map(URI::create);
         }
 
-        @CommandLine.Option(names = {ArgNames.DEBUG_LONG}, description = "Show Debug Output")
-        protected boolean debug;
 
-        private Optional<Boolean> debug() {
-            return debug ? Optional.of(true) : Optional.empty();
-        }
-
-        @CommandLine.Option(names = {ArgNames.LIST_SAMPLES}, description = "List Sample Schemas")
+        @CommandLine.Option(names = {ArgNames.LIST_SAMPLES}, description = "List Sample Schemas", order = 4)
         protected Boolean listSamples;
 
         public Optional<Boolean> listSamples() {
             return Optional.ofNullable(listSamples);
         }
 
-        @CommandLine.Option(names = {ArgNames.LOAD_SAMPLE}, description = "Load Sample to Gremlin Server")
+        @CommandLine.Option(names = {ArgNames.LOAD_SAMPLE}, description = "Load Sample to Gremlin Server", order = 5)
         protected String loadSample;
 
         public Optional<String> loadSample() {
             return Optional.ofNullable(loadSample);
         }
 
-        @CommandLine.Option(names = {ArgNames.DUMP_SAMPLE}, description = "Dump Sample Schema to YAML")
+        @CommandLine.Option(names = {ArgNames.DUMP_SAMPLE}, description = "Dump Sample Schema to YAML", order = 6)
         protected String dumpSample;
 
         public Optional<String> dumpSample() {
             return Optional.ofNullable(dumpSample);
         }
 
-        @CommandLine.Option(names = {ArgNames.EXPORT_SCHEMA}, description = "Export Schema from Gremlin Server to YAML file")
+        @CommandLine.Option(names = {ArgNames.EXPORT_SCHEMA}, description = "Export Schema from Gremlin Server to YAML file", order = 7)
         protected boolean exportSchema;
 
         public Optional<Boolean> exportSchema() {
             return exportSchema ? Optional.of(true) : Optional.empty();
         }
 
-        @CommandLine.Option(names = {ArgNames.LOAD_SCHEMA}, description = "Load YAML Schema to Gremlin Server")
+        @CommandLine.Option(names = {ArgNames.LOAD_SCHEMA}, description = "Load YAML Schema to Gremlin Server", order = 8)
         protected boolean loadSchema;
 
         public Optional<Boolean> loadSchema() {
             return loadSchema ? Optional.of(true) : Optional.empty();
         }
 
-        @CommandLine.Option(names = {ArgNames.CLEAR}, description = "Show Debug Output")
+        @CommandLine.Option(names = {ArgNames.CLEAR}, description = "Delete and overwrite existing remote graph", order = 9)
         protected Boolean clear;
 
         private Optional<Boolean> clear() {
             return Optional.ofNullable(clear);
         }
+
+        @CommandLine.Option(names = {ArgNames.SET_LONG}, description = "Set or override configuration key",order = 10)
+        protected Map<String, String> overrides;
+
+        public Optional<Map<String, String>> overrides() {
+            return Optional.ofNullable(overrides);
+        }
+        @CommandLine.Option(names = {ArgNames.DEBUG_LONG}, description = "Show Debug Output", order = 11)
+        protected boolean debug;
+
+        private Optional<Boolean> debug() {
+            return debug ? Optional.of(true) : Optional.empty();
+        }
+
+
+        @CommandLine.Option(names = {ArgNames.TEST_MODE}, description = "Test Mode", hidden = true, order = 12)
+        protected Boolean testMode = false;
+
+        private Optional<Boolean> testMode() {
+            return Optional.ofNullable(testMode);
+        }
+
+
 
         public static boolean ioutil(GraphSynthCLI cli) {
             if (!(cli.listSamples().isPresent() ||

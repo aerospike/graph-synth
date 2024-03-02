@@ -66,6 +66,7 @@ public abstract class ExampleSchemas {
         samples.add(Synthetic.INSTANCE);
         samples.add(Simplest.INSTANCE);
         samples.add(Benchmark2024.INSTANCE);
+        samples.add(GDemoSchema.INSTANCE);
     }
 
     @Override
@@ -89,12 +90,12 @@ public abstract class ExampleSchemas {
 
         @Override
         public Long edgesForScaleFactor(Long scaleFactor) {
-            return 15L;
+            return 7L;
         }
 
         @Override
         public Long verticesForScaleFactor(Long scaleFactor) {
-            return 0L;
+            return 8L;
         }
 
     }
@@ -128,6 +129,31 @@ public abstract class ExampleSchemas {
         }
     }
 
+    public static class GDemoSchema extends ExampleSchemas{
+        public static final ExampleSchemas INSTANCE = new GDemoSchema();
+        private final GraphSchema schema;
+
+        public GDemoSchema() {
+            this.schema = YAMLSchemaParser.from(IOUtil.copyFromResourcesIntoNewTempFile("gdemo_schema.yaml").toPath()).parse();
+        }
+
+        @Override
+        public GraphTraversalSource writeToTraversalSource(GraphTraversalSource sg) {
+            SchemaGraphUtil.writeToTraversalSource(sg, schema);
+            return sg;
+        }
+
+        @Override
+        public Long edgesForScaleFactor(Long scaleFactor) {
+            return 35L;
+        }
+
+        @Override
+        public Long verticesForScaleFactor(Long scaleFactor) {
+            return 38L;
+        }
+
+    }
     public static class Benchmark2024 extends ExampleSchemas {
         public static final ExampleSchemas INSTANCE = new Benchmark2024();
 
