@@ -1,12 +1,14 @@
 package com.aerospike.graph.synth.cli;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
+import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
 import com.aerospike.movement.output.files.DirectoryOutput;
 import com.aerospike.movement.process.core.Task;
 import com.aerospike.movement.runtime.core.local.LocalParallelStreamRuntime;
 import com.aerospike.movement.runtime.core.local.RunningPhase;
+import com.aerospike.movement.tinkerpop.common.RemoteGraphTraversalProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.iterator.ext.IteratorUtils;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
@@ -53,6 +55,11 @@ public class CLI {
             if (cli.outputUri().get().getScheme().equals("file")) {
                 Path scalePath = Path.of(cli.outputUri().get()).resolve(String.valueOf(scaleFactor));
                 config.setProperty(GraphSynthCLI.Argument.OUTPUT_URI_LONG.getConfigKey(), scalePath.toUri().toString());
+            }
+            if(!cli.inputUri().get().getScheme().equals("file")){
+                config.setProperty(Generator.Config.Keys.SCHEMA_PARSER, TinkerPopSchemaParser.class.getName());
+                config.setProperty(TinkerPopSchemaParser.Config.Keys.GRAPH_PROVIDER, RemoteGraphTraversalProvider.class.getName());
+                config.setProperty(RemoteGraphTraversalProvider.Config.Keys.INPUT_URI,cli.inputUri().get().toString());
             }
 
             Optional<GraphSynthCLIPlugin> plugin = loadPlugin(config);

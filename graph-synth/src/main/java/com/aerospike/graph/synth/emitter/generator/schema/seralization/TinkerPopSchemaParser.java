@@ -11,11 +11,15 @@ import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.GraphSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder;
 import com.aerospike.movement.tinkerpop.common.GraphProvider;
+import com.aerospike.movement.tinkerpop.common.TraversalProvider;
 import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.RuntimeUtil;
 import com.aerospike.graph.synth.util.tinkerpop.SchemaGraphUtil;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.nio.file.Path;
@@ -62,22 +66,29 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
     }
 
 
-    private final Graph schemaGraph;
+    private final GraphTraversalSource schemaG;
 
-    private TinkerPopSchemaParser(final Graph schemaGraph) {
-        this.schemaGraph = schemaGraph;
+    private TinkerPopSchemaParser(final GraphTraversalSource schemaGraphSource) {
+        this.schemaG = schemaGraphSource;
     }
 
-    private static Graph openSchemaGraph(final Configuration config) {
-        final Graph graph;
+    private static GraphTraversalSource openSchemaGraph(final Configuration config) {
+        final GraphTraversalSource g;
         if (config.containsKey(Config.Keys.GRAPHSON_FILE)) {
-            graph = readGraphSON(Path.of(config.getString(Config.Keys.GRAPHSON_FILE)));
+            g = readGraphSON(Path.of(config.getString(Config.Keys.GRAPHSON_FILE))).traversal();
         } else if (config.containsKey(Config.Keys.GRAPH_PROVIDER)) {
-            graph = ((GraphProvider) RuntimeUtil.openClassRef(config.getString(Config.Keys.GRAPH_PROVIDER), config)).getProvided(GraphProvider.GraphProviderContext.INPUT);
+            Object x = RuntimeUtil.openClassRef(config.getString(Config.Keys.GRAPH_PROVIDER), config);
+            if (GraphProvider.class.isAssignableFrom(x.getClass()))
+                g = ((GraphProvider) x).getProvided(GraphProvider.GraphProviderContext.INPUT).traversal();
+            else if (TraversalProvider.class.isAssignableFrom(x.getClass())){
+                g = ((TraversalProvider) x).getProvided(GraphProvider.GraphProviderContext.INPUT);
+            }else{
+                throw new IllegalArgumentException("could not load schema graph");
+            }
         } else {
-            throw new IllegalArgumentException("No GraphSON file or graph provider specified");
+            throw new IllegalArgumentException("could not load schema graph");
         }
-        return graph;
+        return g;
     }
 
     public static TinkerPopSchemaParser open(final Configuration config) {
@@ -172,23 +183,22 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
     @Override
     public GraphSchema parse() {
         final SchemaBuilder builder = SchemaBuilder.create();
-        schemaGraph.vertices().forEachRemaining(tp3Vertex -> {
+        schemaG.V().forEachRemaining(tp3Vertex -> {
             final VertexSchema vertexSchema = fromTinkerPop(tp3Vertex);
             builder.withVertexType(vertexSchema);
         });
-        schemaGraph.edges().forEachRemaining(tp3Edge -> {
+        schemaG.V().E().forEachRemaining(tp3Edge -> {
             final EdgeSchema edgeSchema = fromTinkerPop(tp3Edge);
             builder.withEdgeType(edgeSchema);
         });
 
 
-        List<RootVertexSpec> rootVertexSpecs = getRootVertexSpecsFromGraph(schemaGraph);
+        List<RootVertexSpec> rootVertexSpecs = getRootVertexSpecsFromGraph(schemaG);
         return builder.build(rootVertexSpecs);
     }
 
-    public List<RootVertexSpec> getRootVertexSpecsFromGraph(Graph schemaGraph) {
-        return schemaGraph
-                .traversal()
+    public List<RootVertexSpec> getRootVertexSpecsFromGraph(GraphTraversalSource schemaG) {
+        return schemaG
                 .V()
                 .has(SchemaBuilder.Keys.ENTRYPOINT, true)
                 .toList().stream().map(entrypointVertex -> TPvertexToRootVertexSpec(entrypointVertex))
@@ -216,11 +226,17 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
         return rootVertexSpec;
     }
 
+
     public static void writeGraphSON(final GraphSchema schema, final Path output) {
         final Graph graph = TinkerGraph.open();
         SchemaGraphUtil.writeToGraph(graph, schema);
         graph.traversal().io(output.toAbsolutePath().toString()).write().iterate();
     }
+
+    public static void writeTraversalSource(GraphTraversalSource remote, final GraphSchema schema) {
+        SchemaGraphUtil.writeToTraversalSource(remote, schema);
+    }
+
 
     public static Graph readGraphSON(final Path graphSonPath) {
         if (!graphSonPath.toFile().exists()) {
@@ -232,8 +248,12 @@ public class TinkerPopSchemaParser implements GraphSchemaParser {
     }
 
     public static GraphSchema fromGraph(final Graph graph) {
-        return new TinkerPopSchemaParser(graph).parse();
+        return new TinkerPopSchemaParser(graph.traversal()).parse();
     }
+    public static GraphSchema fromTraversal(final GraphTraversalSource g) {
+        return new TinkerPopSchemaParser(g).parse();
+    }
+
 
     public static GraphSchema fromGraphSON(final Path graphSonPath) {
         return fromGraph(readGraphSON(graphSonPath));

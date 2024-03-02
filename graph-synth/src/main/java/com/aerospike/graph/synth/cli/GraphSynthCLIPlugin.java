@@ -85,8 +85,7 @@ public class GraphSynthCLIPlugin extends Plugin {
             config.setProperty(ENCODER, TinkerPopTraversalEncoder.class.getName());
             config.setProperty(OUTPUT, TinkerPopTraversalOutput.class.getName());
             config.setProperty(TinkerPopTraversalEncoder.Config.Keys.TRAVERSAL_PROVIDER, RemoteGraphTraversalProvider.class.getName());
-            config.setProperty(RemoteGraphTraversalProvider.Config.Keys.HOST, host);
-            config.setProperty(RemoteGraphTraversalProvider.Config.Keys.PORT, port);
+            config.setProperty(RemoteGraphTraversalProvider.Config.Keys.OUTPUT_URI, outputURI.toString());
         } else if (outputScheme.equals("file")) {
             config.setProperty(ENCODER, GraphCSVEncoder.class.getName());
             config.setProperty(OUTPUT, DirectoryOutput.class.getName());
