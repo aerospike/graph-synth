@@ -29,16 +29,6 @@ public class RemoteTraversalSource {
     public static final String REMOTE_TRAVERSAL_TARGET = "graph.synth.remote.target";
     public static final String REMOTE_TRAVERSAL_SCHEMA_SOURCE = "graph.synth.schema.remote.source";
 
-    public static Optional<String> envOrProperty(final String key) {
-        Optional<String> envVal = Optional.ofNullable(System.getenv(key));
-        Optional<String> propVal = Optional.ofNullable(System.getProperty(key));
-        if (envVal.isPresent())
-            return envVal;
-        if (propVal.isPresent())
-            return propVal;
-        return Optional.empty();
-    }
-
     @Test
     public void testGenerateToRemoteTraversalTarget() throws Exception {
 
@@ -88,9 +78,9 @@ public class RemoteTraversalSource {
 
 
         final RemoteGraphTraversalProvider.URIConnectionInfo inputUriInfo;
-        final GraphTraversalSource remote;
-        if (RuntimeUtil.envOrProperty(REMOTE_TRAVERSAL_TARGET).isEmpty()) {
-            URI localhostURI = URI.create("ws://localhost:8182/g");
+        final GraphTraversalSource remoteSchema;
+        if (RuntimeUtil.envOrProperty(REMOTE_TRAVERSAL_SCHEMA_SOURCE).isEmpty()) {
+            URI localhostURI = URI.create("ws://localhost:8182/schema");
 
             inputUriInfo = RemoteGraphTraversalProvider.URIConnectionInfo.from(localhostURI);
 
@@ -99,10 +89,10 @@ public class RemoteTraversalSource {
             inputUriInfo = RemoteGraphTraversalProvider.URIConnectionInfo.from(remoteUri);
         }
         try {
-            remote = AnonymousTraversalSource
+            remoteSchema = AnonymousTraversalSource
                     .traversal()
                     .withRemote(DriverRemoteConnection.using(inputUriInfo.host, inputUriInfo.port, inputUriInfo.traversalSourceName));
-            remote.V().limit(1).hasNext();
+            remoteSchema.V().limit(1).hasNext();
 
         } catch (Exception e) {
             System.out.println(e);
@@ -112,10 +102,10 @@ public class RemoteTraversalSource {
 
         final File yamlFile = IOUtil.copyFromResourcesIntoNewTempFile("gdemo_schema.yaml");
         GraphSchema fromYamlSchema = YAMLSchemaParser.from(yamlFile.toPath()).parse();
-        remote.V().drop().iterate();
+        remoteSchema.V().drop().iterate();
 
-        TinkerPopSchemaTraversalParser.writeTraversalSource(remote, fromYamlSchema);
-        GraphSchema fromGraphSchema = TinkerPopSchemaTraversalParser.fromTraversal(remote);
+        TinkerPopSchemaTraversalParser.writeTraversalSource(remoteSchema, fromYamlSchema);
+        GraphSchema fromGraphSchema = TinkerPopSchemaTraversalParser.fromTraversal(remoteSchema);
         assertTrue(fromGraphSchema.equals(fromYamlSchema));
         int TEST_SCALE = 100;
         Path outputDir = IOUtil.createTempDir();
@@ -129,8 +119,8 @@ public class RemoteTraversalSource {
         };
 
         CLI.main(args);
-        assertEquals(13, remote.V().count().next().longValue());
-        assertEquals(13, remote.E().count().next().longValue());
+        assertEquals(13, remoteSchema.V().count().next().longValue());
+        assertEquals(13, remoteSchema.E().count().next().longValue());
         long filesWritten = Files.walk(outputDir).filter(it -> it.toFile().isFile()).count();
         long linesWritten = Files.walk(outputDir).filter(it -> it.toFile().isFile()).flatMap(it -> {
             try {
@@ -139,8 +129,84 @@ public class RemoteTraversalSource {
                 throw new RuntimeException(e);
             }
         }).count();
-        assertEquals(73*TEST_SCALE, linesWritten - filesWritten);
-        remote.V().drop().iterate();
+        assertEquals(73 * TEST_SCALE, linesWritten - filesWritten);
+        remoteSchema.V().drop().iterate();
+    }
 
+    @Test
+    public void testGenerateFromRemoteSchemaSourceToRemoteGraph() throws Exception {
+
+
+        final RemoteGraphTraversalProvider.URIConnectionInfo schemaURIConfig;
+        final GraphTraversalSource remoteSchema;
+        if (RuntimeUtil.envOrProperty(REMOTE_TRAVERSAL_SCHEMA_SOURCE).isEmpty()) {
+            URI localhostURI = URI.create("ws://localhost:8182/schema");
+
+            schemaURIConfig = RemoteGraphTraversalProvider.URIConnectionInfo.from(localhostURI);
+
+        } else {
+            final URI remoteUri = URI.create(RuntimeUtil.envOrProperty(REMOTE_TRAVERSAL_TARGET).get());
+            schemaURIConfig = RemoteGraphTraversalProvider.URIConnectionInfo.from(remoteUri);
+        }
+        try {
+            remoteSchema = AnonymousTraversalSource
+                    .traversal()
+                    .withRemote(DriverRemoteConnection.using(schemaURIConfig.host, schemaURIConfig.port, schemaURIConfig.traversalSourceName));
+            remoteSchema.V().limit(1).hasNext();
+
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("skipping test, could not connect to " + schemaURIConfig.toString());
+            return;
+        }
+
+        final RemoteGraphTraversalProvider.URIConnectionInfo targetURIConfig;
+        final GraphTraversalSource remoteGraph;
+        if (RuntimeUtil.envOrProperty(REMOTE_TRAVERSAL_TARGET).isEmpty()) {
+            URI localhostURI = URI.create("ws://localhost:8182/g");
+
+            targetURIConfig = RemoteGraphTraversalProvider.URIConnectionInfo.from(localhostURI);
+
+        } else {
+            final URI remoteUri = URI.create(RuntimeUtil.envOrProperty(REMOTE_TRAVERSAL_TARGET).get());
+            targetURIConfig = RemoteGraphTraversalProvider.URIConnectionInfo.from(remoteUri);
+        }
+        try {
+            remoteGraph = AnonymousTraversalSource
+                    .traversal()
+                    .withRemote(DriverRemoteConnection.using(targetURIConfig.host, targetURIConfig.port, targetURIConfig.traversalSourceName));
+            remoteGraph.V().limit(1).hasNext();
+
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("skipping test, could not connect to " + targetURIConfig.toString());
+            return;
+        }
+
+        final File yamlFile = IOUtil.copyFromResourcesIntoNewTempFile("gdemo_schema.yaml");
+        GraphSchema fromYamlSchema = YAMLSchemaParser.from(yamlFile.toPath()).parse();
+        remoteSchema.V().drop().iterate();
+
+        TinkerPopSchemaTraversalParser.writeTraversalSource(remoteSchema, fromYamlSchema);
+        GraphSchema fromGraphSchema = TinkerPopSchemaTraversalParser.fromTraversal(remoteSchema);
+        assertTrue(fromGraphSchema.equals(fromYamlSchema));
+        int TEST_SCALE = 100;
+        Path outputDir = IOUtil.createTempDir();
+        final String[] args = {
+                CLI.GraphSynthCLI.ArgNames.TEST_MODE,
+                CLI.GraphSynthCLI.ArgNames.DEBUG_LONG,
+                CLI.GraphSynthCLI.ArgNames.OUTPUT_URI_LONG, targetURIConfig.uri().toString(),
+                CLI.GraphSynthCLI.ArgNames.INPUT_URI_LONG, schemaURIConfig.uri().toString(),
+                CLI.GraphSynthCLI.ArgNames.SCALE_FACTOR, String.valueOf(TEST_SCALE),
+                CLI.GraphSynthCLI.ArgNames.SET_LONG, setEquals(BATCH_SIZE, String.valueOf(1)),
+        };
+
+        CLI.main(args);
+        assertEquals(13, remoteSchema.V().count().next().longValue());
+        assertEquals(13, remoteSchema.E().count().next().longValue());
+        long generatedVcount = remoteGraph.V().count().next().longValue();
+        long generatedEcount = remoteGraph.E().count().next().longValue();
+        assertEquals(73 * TEST_SCALE, generatedEcount + generatedVcount);
+        remoteSchema.V().drop().iterate();
     }
 }
