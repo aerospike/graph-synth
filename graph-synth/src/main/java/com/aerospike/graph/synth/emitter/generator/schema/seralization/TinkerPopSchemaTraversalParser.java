@@ -24,6 +24,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder.Keys.CHANCES_TO_CREATE;
+import static com.aerospike.graph.synth.emitter.generator.schema.SchemaBuilder.Keys.LIKELIHOOD;
 import static com.aerospike.movement.util.core.configuration.ConfigUtil.subKey;
 
 
@@ -105,7 +107,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
             propertySchema.name = tp3VertexProperty.key();
             propertySchema.type = (String) tp3VertexProperty.value();
             propertySchema.likelihood = (double) getSubKeyFromElement(tp3SchemaVertex, tp3VertexProperty.key(),
-                    SchemaBuilder.Keys.LIKELIHOOD).orElse(1.0);
+                    LIKELIHOOD).orElse(1.0);
             final GeneratorConfig valueConfig = new GeneratorConfig();
             final String implClassName = (String) getSubKeyFromElement(tp3SchemaVertex, tp3VertexProperty.key(), SchemaBuilder.Keys.VALUE_GENERATOR).orElseThrow(() ->
                     new IllegalArgumentException("No value generator implementation specified for property " + tp3VertexProperty.key())
@@ -122,8 +124,8 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
         schemaG.V(tp3SchemaVertex).outE().forEachRemaining(edge -> {
             final OutEdgeSpec outEdgeSpec = new OutEdgeSpec();
             outEdgeSpec.name = edge.label();
-            outEdgeSpec.likelihood = edge.properties(SchemaBuilder.Keys.LIKELIHOOD).hasNext() ?
-                    (double) edge.properties(SchemaBuilder.Keys.LIKELIHOOD).next().value() : 1.0;
+            outEdgeSpec.likelihood = edge.properties(LIKELIHOOD).hasNext() ?
+                    (double) edge.properties(LIKELIHOOD).next().value() : 1.0;
             outEdgeSpec.chancesToCreate = edge.properties(SchemaBuilder.Keys.CHANCES_TO_CREATE).hasNext() ?
                     (int) edge.properties(SchemaBuilder.Keys.CHANCES_TO_CREATE).next().value() : 1;
             outEdgeSpecs.add(outEdgeSpec);
@@ -134,7 +136,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
     }
 
     private boolean isMetadata(final String key) {
-        return ConfigUtil.isSubKey(key) || key.equals(SchemaBuilder.Keys.ENTRYPOINT);
+        return ConfigUtil.isSubKey(key) || key.equals(SchemaBuilder.Keys.ENTRYPOINT) || key.equals(LIKELIHOOD) || key.equals(CHANCES_TO_CREATE);
     }
 
     public static Optional<Object> getSubKeyFromElement(final Element tp3ele, final String key, final String subKey) {
@@ -186,7 +188,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
             propertySchema.name = tp3EdgeProperty.key();
             propertySchema.type = (String) tp3EdgeProperty.value();
             propertySchema.likelihood = (double) getSubKeyFromElement(tp3SchemaEdge, tp3EdgeProperty.key(),
-                    SchemaBuilder.Keys.LIKELIHOOD).orElse(1.0);
+                    LIKELIHOOD).orElse(1.0);
             final GeneratorConfig valueConfig = new GeneratorConfig();
             final String implClassName;
             try {
@@ -247,7 +249,7 @@ public class TinkerPopSchemaTraversalParser implements GraphSchemaParser {
     public static RootVertexSpec TPvertexToRootVertexSpec(final Vertex entrypointVertex) {
         final RootVertexSpec rootVertexSpec = new RootVertexSpec();
         rootVertexSpec.chancesToCreate = (Integer) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.CHANCES_TO_CREATE).orElse(1);
-        rootVertexSpec.likelihood = (Double) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, SchemaBuilder.Keys.LIKELIHOOD).orElse(1.0);
+        rootVertexSpec.likelihood = (Double) getSubKeyFromElement(entrypointVertex, SchemaBuilder.Keys.ENTRYPOINT, LIKELIHOOD).orElse(1.0);
         rootVertexSpec.name = (String) entrypointVertex.label();
         return rootVertexSpec;
     }

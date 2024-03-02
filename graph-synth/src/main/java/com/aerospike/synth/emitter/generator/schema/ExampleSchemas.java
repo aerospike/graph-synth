@@ -9,10 +9,7 @@ import com.aerospike.movement.util.core.runtime.IOUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.io.IOException;
@@ -67,6 +64,7 @@ public abstract class ExampleSchemas {
         samples.add(Simplest.INSTANCE);
         samples.add(Benchmark2024.INSTANCE);
         samples.add(GDemoSchema.INSTANCE);
+        samples.add(PersonCatMouse.INSTANCE);
     }
 
     @Override
@@ -129,7 +127,7 @@ public abstract class ExampleSchemas {
         }
     }
 
-    public static class GDemoSchema extends ExampleSchemas{
+    public static class GDemoSchema extends ExampleSchemas {
         public static final ExampleSchemas INSTANCE = new GDemoSchema();
         private final GraphSchema schema;
 
@@ -154,6 +152,7 @@ public abstract class ExampleSchemas {
         }
 
     }
+
     public static class Benchmark2024 extends ExampleSchemas {
         public static final ExampleSchemas INSTANCE = new Benchmark2024();
 
@@ -218,6 +217,53 @@ public abstract class ExampleSchemas {
                     .property("edge_prop", "String")
                     .property("edge_prop.value.generator", ValueGenerator.RandomDigitSequence.class.getName())
                     .property("edge_prop.value.generator.digits", 8);
+        }
+    }
+
+    public static class PersonCatMouse extends ExampleSchemas {
+        public static final ExampleSchemas INSTANCE = new PersonCatMouse();
+        @Override
+        public GraphTraversalSource writeToTraversalSource(GraphTraversalSource sg) {
+            traversal(sg).iterate();
+            return sg;
+        }
+
+        @Override
+        public Long edgesForScaleFactor(Long scaleFactor) {
+            return -1L;
+        }
+
+        @Override
+        public Long verticesForScaleFactor(Long scaleFactor) {
+            return -1L;
+        }
+
+        public GraphTraversal<?, ?> traversal(GraphTraversalSource g) {
+            return g
+                    .addV("Person").as("Person")
+                    .property("entrypoint", true)
+                    .property("entrypoint.likelyhood", 1.0)
+                    .property("maritalStatus", "String")
+                    .property("maritalStatus.likelihood", 1.0)
+                    .property("maritalStatus.value.generator", "JFaker")
+                    .property("maritalStatus.value.generator.module", "demographic")
+                    .property("maritalStatus.value.generator.method", "maritalStatus")
+                    .addV("Cat").as("Cat")
+                    .property("name", "String")
+                    .property("name.likelihood", 1.0)
+                    .property("name.value.generator", "ChoiceFromList")
+                    .property("name.value.generator.choices", List.of("Ralph", "Fluffy", "Tom"))
+                    .addV("Mouse").as("Mouse")
+                    .property("color", "String")
+                    .property("color.likelihood", 1.0)
+                    .property("color.value.generator", "ChoiceFromList")
+                    .property("color.value.generator.choices", List.of("Brown", "White", "Grey"))
+                    .addE("HasCat").from("Person").to("Cat")
+                    .property("likelihood",.5)
+                    .property("create.chances",3)
+                    .addE("Chased").from("Cat").to("Mouse")
+                    .property("likelihood",.2)
+                    .property("create.chances",10);
         }
     }
 

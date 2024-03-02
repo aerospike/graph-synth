@@ -1,0 +1,51 @@
+rootVertexTypes:
+  - name: Person
+    likelihood: 1.0
+    chancesToCreate: 1
+
+vertexTypes:
+  - name: Person
+    outEdges:
+      - name: HasCat
+        likelihood: .5
+        chancesToCreate: 3
+    properties:
+      - name: maritalStatus
+        type: String
+        likelihood: 1.0
+        valueGenerator:
+          impl: JFaker
+          args:
+            module: demographic
+            method: maritalStatus
+
+  - name: Cat
+    outEdges:
+      - name: Chased
+        likelihood: .2
+        chancesToCreate: 10
+    properties:
+      - name: name
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Ralph", "Fluffy", "Tom" ]
+  - name: Mouse
+    outEdges: [ ]
+    properties:
+      - name: color
+        likelihood: 1.0
+        valueGenerator:
+          impl: ChoiceFromList
+          args:
+            choices: [ "Brown", "White", "Grey" ]
+edgeTypes:
+  - name: HasCat
+    outVertex: Person
+    inVertex: Cat
+    properties: [ ]
+  - name: Chased
+    outVertex: Cat
+    inVertex: Mouse
+    properties: [ ]
