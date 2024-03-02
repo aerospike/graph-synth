@@ -8,7 +8,6 @@ package com.aerospike.synth.process.tasks.generator;
 
 import com.aerospike.graph.synth.emitter.generator.Generator;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
-import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaGraphParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.TinkerPopSchemaTraversalParser;
 import com.aerospike.graph.synth.emitter.generator.schema.seralization.YAMLSchemaParser;
 import com.aerospike.graph.synth.process.tasks.generator.Generate;
