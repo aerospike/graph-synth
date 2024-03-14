@@ -1,0 +1,22 @@
+rootVertexTypes:
+  - name: A
+    likelihood: 1.0
+    chancesToCreate: 1
+
+vertexTypes:
+  - name: A
+    outEdges:
+      - name: AtoB
+        likelihood: 1.0
+        chancesToCreate: 1
+    properties: []
+
+  - name: B
+    outEdges: []
+    properties: []
+
+edgeTypes:
+  - name: AtoB
+    inVertex: B
+    outVertex: A
+    properties: []

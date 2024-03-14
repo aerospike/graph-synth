@@ -61,7 +61,7 @@ public class GeneratedVertex implements Emitable, EmittedVertex {
 
     public Stream<Emitable> emit(Output output) {
         if (!emitted.getAndSet(true))
-            output.writer(GeneratedVertex.class, this.context.vertexSchema.label()).writeToOutput(this);
+            output.writer(GeneratedVertex.class, this.context.vertexSchema.label()).writeToOutput(Optional.of(this));
         return stream();
     }
 

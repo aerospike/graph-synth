@@ -10,15 +10,17 @@ package com.aerospike.graph.synth.emitter.generator.schema.seralization;
 import com.aerospike.movement.config.core.ConfigurationBase;
 import com.aerospike.graph.synth.emitter.generator.schema.GraphSchemaParser;
 import com.aerospike.graph.synth.emitter.generator.schema.definition.GraphSchema;
-import com.aerospike.movement.util.core.configuration.ConfigurationUtil;
+import com.aerospike.movement.util.core.configuration.ConfigUtil;
 import com.aerospike.movement.util.core.runtime.IOUtil;
 import org.apache.commons.configuration2.Configuration;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -26,6 +28,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Grant Haywood (<a href="http://iowntheinter.net">http://iowntheinter.net</a>)
@@ -46,7 +49,7 @@ public class YAMLSchemaParser implements GraphSchemaParser {
 
         @Override
         public List<String> getKeys() {
-            return ConfigurationUtil.getKeysFromClass(Config.Keys.class);
+            return ConfigUtil.getKeysFromClass(Config.Keys.class);
         }
 
         public static class Keys {
@@ -83,6 +86,8 @@ public class YAMLSchemaParser implements GraphSchemaParser {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        } else if (yamlSchemaFileURI.getScheme().equals("file")) {
+            return new YAMLSchemaParser(Path.of(yamlSchemaFileURI).toFile());
         } else {
             throw new RuntimeException("Unsupported URI scheme: " + yamlSchemaFileURI.getScheme());
         }
@@ -102,4 +107,32 @@ public class YAMLSchemaParser implements GraphSchemaParser {
             throw new RuntimeException("Could not read file: " + file.toPath(), e);
         }
     }
+
+    public static String dumpSchema(final GraphSchema schema) {
+        DumperOptions options = new DumperOptions();
+        options.setIndent(4);
+        options.setPrettyFlow(true);
+        // Fix below - additional configuration
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        final Yaml yaml = new Yaml(options);
+        final StringWriter writer = new StringWriter();
+        yaml.dump(schema, writer);
+        String s = writer.toString().lines().filter(line -> !line.startsWith("!!")).collect(Collectors.joining("\n"));
+        return s;
+    }
+    public static String dump(final Object serializable) {
+        DumperOptions options = new DumperOptions();
+        options.setIndent(4);
+        options.setPrettyFlow(true);
+        // Fix below - additional configuration
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        final Yaml yaml = new Yaml(options);
+        final StringWriter writer = new StringWriter();
+        yaml.dump(serializable, writer);
+        String s = writer.toString().lines().filter(line -> !line.startsWith("!!")).collect(Collectors.joining("\n"));
+        return s;
+    }
+
 }

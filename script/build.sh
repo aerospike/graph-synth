@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-mvn -DskipTests clean package
+source script/build-deps.sh
+${MAVEN_PATH:-"mvn"} -DskipTests clean package

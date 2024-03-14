@@ -32,7 +32,8 @@ public class VertexSchema {
             final Iterator<OutEdgeSpec> i = other.outEdges.stream().filter(it -> it.name.equals(e.name)).iterator();
             if (!i.hasNext())
                 return false;
-            if (!i.next().equals(e))
+            OutEdgeSpec next = i.next();
+            if (!next.equals(e))
                 return false;
         }
         for (PropertySchema p : properties) {
