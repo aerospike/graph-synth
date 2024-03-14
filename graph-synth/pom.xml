@@ -16,6 +16,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <snakeyaml.version>2.0</snakeyaml.version>
+        <movement.version>0.9.0</movement.version>
     </properties>
 
     <dependencies>
@@ -38,7 +39,7 @@
         <dependency>
             <groupId>com.aerospike.movement</groupId>
             <artifactId>files</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${movement.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -54,28 +55,28 @@
         <dependency>
             <groupId>com.aerospike.movement</groupId>
             <artifactId>core</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${movement.version}</version>
         </dependency>
         <dependency>
             <groupId>com.aerospike.movement</groupId>
             <artifactId>files</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${movement.version}</version>
         </dependency>
         <dependency>
             <groupId>com.aerospike.movement</groupId>
             <artifactId>plugin</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${movement.version}</version>
         </dependency>
         <dependency>
             <groupId>com.aerospike.movement</groupId>
             <artifactId>tinkerpop</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${movement.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.aerospike.movement</groupId>
             <artifactId>cli</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${movement.version}</version>
         </dependency>
     </dependencies>
     <build>

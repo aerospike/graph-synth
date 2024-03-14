@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-MOVEMENT_BRANCH="dev"
+MOVEMENT_BRANCH="release-0.9.0"
 MAVEN_VERSION=3.9.6
 #install dependencies
 REPO_PATH=$(pwd)
